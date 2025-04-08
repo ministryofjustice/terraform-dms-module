@@ -4,7 +4,7 @@ data "aws_subnets" "subnet_ids_vpc_subnets" {
     values = [var.vpc_id]
   }
   filter {
-    name = "cidr-block"
+    name = "subnet-id"
     values = var.dms_replication_instance.subnet_ids
   }
 }
