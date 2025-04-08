@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 # IAM Role for DMS VPC Access
 resource "aws_iam_role" "dms" {
   # This has to be a specific name for some reason see https://repost.aws/questions/QU61eADUU7SnO-t7MmhxgfPA/dms-service-roles
-  name = "dms-vpc-role"
+  name_prefix = "dms-vpc-role-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -62,7 +62,7 @@ resource "aws_iam_role_policy" "dms" {
 }
 
 resource "aws_iam_role" "dms_source" {
-  name = "${var.db}-dms-source-${var.environment}"
+  name_prefix = "${var.db}-dms-source-${var.environment}-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -114,7 +114,7 @@ resource "aws_iam_role_policy_attachment" "dms-vpc-role-AmazonDMSVPCManagementRo
 # IAM Role for DMS Cloudwatch Access
 resource "aws_iam_role" "dms_cloudwatch" {
   # This has to be a specific name for some reason
-  name = "dms-cloudwatch-logs-role"
+  name_prefix = "dms-cloudwatch-logs-role-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -142,7 +142,7 @@ resource "aws_iam_role_policy_attachment" "dms-cloudwatch-logs-role-AmazonDMSClo
 # IAM Role for DMS Premigration Assessmeent
 resource "aws_iam_role" "dms_premigration" {
   count = var.create_premigration_assessement_resources ? 1 : 0
-  name = "dms-premigration-assessment-role"
+  name_prefix = "dms-premigration-assessment-role-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
