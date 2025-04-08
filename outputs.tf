@@ -24,3 +24,4 @@ output "validation_lambda_arn" {
   value = module.validation_lambda_function.lambda_function_arn
   description = "The ARN for the validation AWS Lambda function"
 }
+
