@@ -24,7 +24,7 @@ resource "aws_iam_role" "dms" {
 }
 
 resource "aws_iam_role_policy" "dms" {
-  name = "${var.db}-dms-${var.environment}"
+  name = "${var.db}-dms"
   role = aws_iam_role.dms.id
 
   policy = jsonencode({
@@ -62,7 +62,7 @@ resource "aws_iam_role_policy" "dms" {
 }
 
 resource "aws_iam_role" "dms_source" {
-  name_prefix = "${var.db}-dms-source-${var.environment}-"
+  name_prefix = "${var.db}-dms-source-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -77,13 +77,13 @@ resource "aws_iam_role" "dms_source" {
   })
 
   tags = merge(
-    { Name = "${var.db}-dms-${var.environment}" },
+    { Name = "${var.db}-dms" },
     var.tags
   )
 }
 
 resource "aws_iam_role_policy" "dms_source" {
-  name = "${var.db}-dms-source-${var.environment}"
+  name = "${var.db}-dms-source"
   role = aws_iam_role.dms_source.id
 
   policy = jsonencode({
@@ -165,7 +165,7 @@ resource "aws_iam_role" "dms_premigration" {
 
 resource "aws_iam_role_policy" "dms_premigration" {
   count = var.create_premigration_assessement_resources ? 1 : 0
-  name = "${var.db}-dms-premigration-${var.environment}"
+  name = "${var.db}-dms-premigration"
   role = aws_iam_role.dms_premigration[0].id
 
   policy = jsonencode({
