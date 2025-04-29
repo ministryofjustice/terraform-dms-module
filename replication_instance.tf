@@ -1,9 +1,9 @@
 resource "aws_security_group" "replication_instance" {
-  name        = "${var.db}-${data.aws_region.current.name}-${var.environment}"
+  name        = "${var.db}-dms-replication-instance"
   description = "Security group for DMS replication instances. Managed by Terraform"
   vpc_id      = var.vpc_id
   tags = merge(
-    { Name = "${var.db}-${data.aws_region.current.name}-${var.environment}" },
+    { Name = "${var.db}-dms-replication-instance" },
     var.tags
   )
 }
@@ -35,17 +35,16 @@ resource "aws_vpc_security_group_egress_rule" "replication_instance_outbound" {
   )
 }
 
-# Being moved out of the modules as it is reused for each environment
 resource "aws_dms_replication_subnet_group" "replication_subnet_group" {
   count                                = var.dms_replication_instance.subnet_group_id == null ? 1 : 0
   replication_subnet_group_description = "Subnet group for DMS replication instances"
-  replication_subnet_group_id          = var.dms_replication_instance.subnet_group_name == null ? "${data.aws_region.current.name}-${var.environment}" : var.dms_replication_instance.subnet_group_name
+  replication_subnet_group_id          = var.dms_replication_instance.subnet_group_name == null ? var.db : var.dms_replication_instance.subnet_group_name
   # these would come from the core stack once created
   subnet_ids = data.aws_subnets.subnet_ids_vpc_subnets.ids
 
   tags = merge(var.tags,
     {
-      Name        = "${data.aws_region.current.name}-${var.environment}"
+      Name        = var.db
       application = "Data Engineering"
     }
   )
