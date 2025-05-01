@@ -91,7 +91,8 @@ resource "aws_iam_role_policy" "dms_source" {
     "Statement" : [
       {
         "Action" : [
-          "secretsmanager:GetSecretValue"
+          "secretsmanager:GetSecretValue",
+          "iam:PassRole"
         ],
         "Effect" : "Allow",
         "Resource" : var.dms_source.secrets_manager_arn,
