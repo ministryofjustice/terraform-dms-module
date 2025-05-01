@@ -6,6 +6,7 @@ resource "aws_dms_endpoint" "source" {
   endpoint_id   = "${var.db}-source"
   endpoint_type = "source"
   engine_name   = var.dms_source.engine_name
+  server_name = var.dms_source.server_name
 
   secrets_manager_arn             = var.dms_source.secrets_manager_arn
   secrets_manager_access_role_arn = aws_iam_role.dms_source.arn
