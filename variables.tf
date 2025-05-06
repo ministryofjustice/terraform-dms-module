@@ -51,6 +51,7 @@ variable "dms_source" {
     sid                         = string,
     extra_connection_attributes = optional(string)
     cdc_start_time              = optional(string)
+    asm_secret_id               = optional(string)
   })
 
   validation {
