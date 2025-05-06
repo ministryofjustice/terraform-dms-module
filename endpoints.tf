@@ -12,6 +12,12 @@ resource "aws_dms_endpoint" "source" {
   database_name                   = var.dms_source.sid
   extra_connection_attributes     = var.dms_source.extra_connection_attributes
 
+  extra_connection_attributes = (
+    var.dms_source.asm_secret_id != null
+    ? "${var.dms_source.extra_connection_attributes};SecretsManagerOracleAsmSecretId=${var.dms_source.asm_secret_id};SecretsManagerOracleAsmAccessRoleArn=${aws_iam_role.dms_source.arn}"
+    : var.dms_source.extra_connection_attributes
+  )
+
   tags = merge(
     { Name = "${var.db}-source" },
     var.tags
