@@ -96,6 +96,10 @@ resource "aws_iam_role_policy" "dms_source" {
         ],
         "Effect" : "Allow",
         "Resource" : var.dms_source.secrets_manager_arn,
+        "Resource" = concat(
+          [ var.dms_source.secrets_manager_arn ],
+          var.dms_source.asm_secret_id != null ? [ var.dms_source.asm_secret_id ] : []
+        )
         "Sid" : "AllowGetSecretValue"
       }
     ]
