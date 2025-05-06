@@ -10,7 +10,6 @@ resource "aws_dms_endpoint" "source" {
   secrets_manager_arn             = var.dms_source.secrets_manager_arn
   secrets_manager_access_role_arn = aws_iam_role.dms_source.arn
   database_name                   = var.dms_source.sid
-  extra_connection_attributes     = var.dms_source.extra_connection_attributes
 
   extra_connection_attributes = (
     var.dms_source.asm_secret_id != null
