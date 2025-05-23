@@ -66,7 +66,10 @@ variable "dms_source" {
 }
 
 variable "dms_mapping_rules" {
-  type        = string
+  type = object({
+    bucket = string
+    key    = string
+  })
   description = "The path to the mapping rules file"
 }
 
@@ -99,37 +102,37 @@ variable "tags" {
 }
 
 variable "create_premigration_assessement_resources" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "whether to create pre-requisites for DMS PreMigration Assessment to be run manually"
 }
 
 variable "retry_failed_after_recreate_metadata" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Whether to retry validation of failures after regenerating metadata"
 }
 
 variable "write_metadata_to_glue_catalog" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Whether to write metdata to glue catalog"
 }
 
 variable "valid_files_mutable" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "If false, copy valid files to their destination bucket with a datetime infix"
 }
 
 variable "glue_catalog_arn" {
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   description = "Which glue catalog to grant metadata generator permissions to (optional)"
 }
 
 variable "glue_catalog_role_arn" {
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   description = "Which role to use to access glue catalog (optional)"
 }

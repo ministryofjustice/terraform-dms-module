@@ -1,6 +1,11 @@
 # Local to parse the JSON
+data "aws_s3_object" "mapping_rules" {
+  bucket = var.dms_mapping_rules.bucket
+  key    = var.dms_mapping_rules.key
+}
+
 locals {
-  input_data         = jsondecode(file(var.dms_mapping_rules))
+  input_data         = jsondecode(data.aws_s3_object.mapping_rules.body)
   objects            = [for object in local.input_data.objects : replace(object, "-", "_")]
   blobs              = local.input_data.blobs
   columns_to_exclude = local.input_data.columns_to_exclude

@@ -123,11 +123,11 @@ class MetadataExtractor:
         self.deleted_tables = db_options.get("deleted_tables", [])
         lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
         path_to_dms_mapping_rules = db_options.get("path_to_dms_mapping_rules", "")
-        if path_to_dms_mapping_rules:
+        if dms_mapping_rules_bucket:
             logger.info("Loading columns to exclude from %s", path_to_dms_mapping_rules)
             response = s3.get_object(
-                Bucket=lambda_bucket_name,
-                Key=path_to_dms_mapping_rules
+                Bucket=dms_mapping_rules_bucket,
+                Key=dms_mapping_rules_key
             )
             self.dms_mapping_rules = json.loads(b"".join(response['Body'].readlines()).decode("utf-8"))
         self.excluded_columns_by_object = defaultdict(set)
@@ -290,6 +290,8 @@ def handler(event, context):  # pylint: disable=unused-argument
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
     raw_history_bucket = os.getenv("RAW_HISTORY_BUCKET")
+    dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
+    dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
 
     # TODO: Works for oracle databases. Need to add support for other databases
     port = "1521"
@@ -298,9 +300,19 @@ def handler(event, context):  # pylint: disable=unused-argument
     db_string = f"{engine}://{username}:{password}@{dsn}"
     engine = create_engine(db_string)
 
-    db_objects = [obj.lower() for obj in json.loads(os.getenv("DB_OBJECTS", "[]"))]
-    schema_name = os.getenv("DB_SCHEMA_NAME").lower() # May be empty string if schema specified on per-table basis
-    path_to_dms_mapping_rules = os.environ.get("PATH_TO_DMS_MAPPING_RULES", "")
+    response = s3.get_object(
+        Bucket=dms_mapping_rules_bucket,
+        Key=dms_mapping_rules_key
+    )
+    dms_mapping_rules = json.loads(b"".join(response['Body'].readlines()).decode("utf-8"))
+
+
+    # REMOVE: Change how this gets populated
+    # db_objects = [obj.lower() for obj in json.loads(os.getenv("DB_OBJECTS", "[]"))]
+    # schema_name = os.getenv("DB_SCHEMA_NAME").lower() # May be empty string if schema specified on per-table basis
+
+    db_objects = dms_mapping_rules["objects"]
+    schema = dms_mapping_rules["schema"]
 
     db_options = {
         "database": db_name,
@@ -309,7 +321,7 @@ def handler(event, context):  # pylint: disable=unused-argument
         "objects": db_objects,
         "include_derived_columns": True,
         "dialect": engine,
-        "path_to_dms_mapping_rules": path_to_dms_mapping_rules
+        "path_to_dms_mapping_rules": dms_mapping_rules_key
     }
 
     if use_glue_catalog:
