@@ -83,6 +83,19 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
     ]
   }
 
+  # Lambda can pull mappings json file
+  statement {
+    actions = [
+      "s3:ListBucket",
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.dms_mapping_rules.bucket}",
+      "arn:aws:s3:::${var.dms_mapping_rules.bucket}/*",
+    ]
+  }
+
   # Lambda can reprocess data in the invalid bucket
   statement {
     actions = [
