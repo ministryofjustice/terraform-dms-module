@@ -61,51 +61,6 @@ resource "aws_iam_role_policy" "dms" {
   })
 }
 
-resource "aws_iam_role" "dms_source" {
-  name_prefix = "${var.db}-dms-source-"
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "dms.${data.aws_region.current.name}.amazonaws.com"
-        },
-        "Action" : "sts:AssumeRole"
-      }
-    ]
-  })
-
-  tags = merge(
-    { Name = "${var.db}-dms" },
-    var.tags
-  )
-}
-
-resource "aws_iam_role_policy" "dms_source" {
-  name = "${var.db}-dms-source"
-  role = aws_iam_role.dms_source.id
-
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Action" : [
-          "secretsmanager:GetSecretValue",
-          "iam:PassRole"
-        ],
-        "Effect" : "Allow",
-        "Resource" : var.dms_source.secrets_manager_arn,
-        "Resource" = concat(
-          [ var.dms_source.secrets_manager_arn ],
-          var.dms_source.asm_secret_id != null ? [ var.dms_source.asm_secret_id ] : []
-        )
-        "Sid" : "AllowGetSecretValue"
-      }
-    ]
-  })
-}
-
 resource "aws_iam_role_policy_attachment" "dms-vpc-role-AmazonDMSVPCManagementRole" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole"
   role       = aws_iam_role.dms.name
@@ -146,7 +101,7 @@ resource "aws_iam_role_policy_attachment" "dms-cloudwatch-logs-role-AmazonDMSClo
 
 # IAM Role for DMS Premigration Assessmeent
 resource "aws_iam_role" "dms_premigration" {
-  count = var.create_premigration_assessement_resources ? 1 : 0
+  count       = var.create_premigration_assessement_resources ? 1 : 0
   name_prefix = "dms-premigration-assessment-role-"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
@@ -170,31 +125,31 @@ resource "aws_iam_role" "dms_premigration" {
 
 resource "aws_iam_role_policy" "dms_premigration" {
   count = var.create_premigration_assessement_resources ? 1 : 0
-  name = "${var.db}-dms-premigration"
-  role = aws_iam_role.dms_premigration[0].id
+  name  = "${var.db}-dms-premigration"
+  role  = aws_iam_role.dms_premigration[0].id
 
   policy = jsonencode({
-    "Version":"2012-10-17",
-    "Statement":[
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        "Effect":"Allow",
-        "Action":[
+        "Effect" : "Allow",
+        "Action" : [
           "s3:PutObject",
           "s3:DeleteObject",
           "s3:GetObject",
           "s3:PutObjectTagging"
         ],
-        "Resource":[
+        "Resource" : [
           "${aws_s3_bucket.premigration_assessment[0].arn}/*"
         ]
       },
       {
-        "Effect":"Allow",
-        "Action":[
+        "Effect" : "Allow",
+        "Action" : [
           "s3:ListBucket",
           "s3:GetBucketLocation"
-         ],
-        "Resource":[
+        ],
+        "Resource" : [
           aws_s3_bucket.premigration_assessment[0].arn
         ]
       }

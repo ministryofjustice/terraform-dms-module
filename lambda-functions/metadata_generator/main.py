@@ -18,6 +18,18 @@ from sqlalchemy import create_engine
 
 patch_all()
 
+raw_history_bucket = os.getenv("RAW_HISTORY_BUCKET")
+invalid_bucket_name = os.getenv("INVALID_BUCKET")
+landing_bucket_name = os.getenv("LANDING_BUCKET")
+dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
+dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
+lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
+metadata_bucket = os.getenv("METADATA_BUCKET")
+db_secret_arn = os.getenv("DB_SECRET_ARN")
+retry_failed_after_recreate_metadata = os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
+use_glue_catalog = os.getenv("USE_GLUE_CATALOG", "true").lower() == "true"
+glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
+
 def _get_glue_client():
     """
     Return a glue client with an appropriate role
@@ -121,7 +133,7 @@ class MetadataExtractor:
         self.dialect = db_options["dialect"]
         self.objects = db_options["objects"]
         self.deleted_tables = db_options.get("deleted_tables", [])
-        lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
+
         path_to_dms_mapping_rules = db_options.get("path_to_dms_mapping_rules", "")
         if dms_mapping_rules_bucket:
             logger.info("Loading columns to exclude from %s", path_to_dms_mapping_rules)
@@ -276,22 +288,16 @@ class MetadataExtractor:
 
 
 def handler(event, context):  # pylint: disable=unused-argument
-    metadata_bucket = os.getenv("METADATA_BUCKET")
-    db_secret_arn = os.getenv("DB_SECRET_ARN")
     db_secret_response = secretsmanager.get_secret_value(SecretId=db_secret_arn)
     db_secret = json.loads(db_secret_response["SecretString"])
     db_identifier = db_secret.get("dbInstanceIdentifier", os.getenv("GLUE_CATALOG_DATABASE_NAME")) # identifies database in glue catalog
-    use_glue_catalog = os.getenv("USE_GLUE_CATALOG", "true").lower() == "true"
-    glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
-    retry_failed_after_recreate_metadata = os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
+
     username = db_secret["username"]
     password = db_secret["password"]
     engine = db_secret.get("engine", os.getenv("ENGINE"))
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
-    raw_history_bucket = os.getenv("RAW_HISTORY_BUCKET")
-    dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
-    dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
+
 
     # TODO: Works for oracle databases. Need to add support for other databases
     port = "1521"
@@ -317,7 +323,7 @@ def handler(event, context):  # pylint: disable=unused-argument
     db_options = {
         "database": db_name,
         "identifier": db_identifier,
-        "schema": schema_name,
+        "schema": schema,
         "objects": db_objects,
         "include_derived_columns": True,
         "dialect": engine,
@@ -357,7 +363,7 @@ def handler(event, context):  # pylint: disable=unused-argument
         gc.generate_from_meta(
             table,
             db_identifier.replace("_", "-"),
-            f"s3://{raw_history_bucket}/{schema_name}/{table.name}",
+            f"s3://{raw_history_bucket}/{schema}/{table.name}",
         )
         for table in db_metadata
     ]
@@ -398,11 +404,8 @@ def handler(event, context):  # pylint: disable=unused-argument
 
 def reprocess_failed_records():
     logger.info("Reprocessing failed records")
-    # Reprocess failed records
-    invalid_bucket_name = os.getenv("INVALID_BUCKET")
-    landing_bucket_name = os.getenv("LANDING_BUCKET")
     list_invalid_bucket = s3.list_objects_v2(Bucket=invalid_bucket_name)
-    logger.info(f"Invalid bucket: {list_invalid_bucket}")
+    logger.debug(f"Invalid bucket: {list_invalid_bucket}")
     if "Contents" not in list_invalid_bucket:
         logger.info("No invalid keys found")
         return

@@ -1,4 +1,11 @@
+locals {
+  database_credentials = jsondecode(data.aws_secretsmanager_secret_version.database_credentials.secret_string)
+}
 data "aws_region" "current" {}
+
+data "aws_secretsmanager_secret_version" "database_credentials" {
+  secret_id = var.dms_source.secrets_manager_arn
+}
 
 # DMS Source Endpoint
 resource "aws_dms_endpoint" "source" {
@@ -7,15 +14,13 @@ resource "aws_dms_endpoint" "source" {
   endpoint_type = "source"
   engine_name   = var.dms_source.engine_name
 
-  secrets_manager_arn             = var.dms_source.secrets_manager_arn
-  secrets_manager_access_role_arn = aws_iam_role.dms_source.arn
-  database_name                   = var.dms_source.sid
+  database_name = var.dms_source.sid
+  server_name   = local.database_credentials["host"]
+  username      = local.database_credentials["username"]
+  password      = local.database_credentials["password"]
+  port          = local.database_credentials["port"]
 
-  extra_connection_attributes = (
-    var.dms_source.asm_secret_id != null
-    ? "${var.dms_source.extra_connection_attributes};SecretsManagerOracleAsmSecretId=${var.dms_source.asm_secret_id};SecretsManagerOracleAsmAccessRoleArn=${aws_iam_role.dms_source.arn}"
-    : var.dms_source.extra_connection_attributes
-  )
+  extra_connection_attributes = var.dms_source.extra_connection_attributes
 
   tags = merge(
     { Name = "${var.db}-source" },
