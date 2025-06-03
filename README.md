@@ -110,6 +110,8 @@ This will be used to select the tables to be migrated.
 | Name | Type |
 |------|------|
 | [aws_dms_endpoint.source](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_endpoint) | resource |
+| [aws_dms_event_subscription.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_event_subscription) | resource |
+| [aws_dms_event_subscription.task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_event_subscription) | resource |
 | [aws_dms_replication_instance.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_replication_instance) | resource |
 | [aws_dms_replication_subnet_group.replication_subnet_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_replication_subnet_group) | resource |
 | [aws_dms_replication_task.cdc_replication_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_replication_task) | resource |
@@ -155,5 +157,6 @@ This will be used to select the tables to be migrated.
 | [aws_s3_bucket_versioning.validation_metadata](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
 | [aws_security_group.metadata_generator_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.replication_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_sns_topic.dms_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
 | [aws_vpc_security_group_egress_rule.replication_instance_outbound](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 <!-- END_TF_DOCS -->
