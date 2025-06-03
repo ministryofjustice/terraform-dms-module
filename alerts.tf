@@ -13,7 +13,7 @@ resource "aws_sns_topic" "dms_events" {
 resource "aws_sns_topic_subscription" "slack" {
   topic_arn = aws_sns_topic.dms_events.arn
   protocol  = "https"
-  endpoint  = data.aws_secretsmanager_secret_version.slack_webhook.secrets_string
+  endpoint  = data.aws_secretsmanager_secret_version.slack_webhook.secret_string
 }
 
 resource "aws_dms_event_subscription" "task" {
