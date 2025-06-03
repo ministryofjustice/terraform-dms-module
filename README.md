@@ -90,6 +90,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_replication_task_id"></a> [replication\_task\_id](#input\_replication\_task\_id) | n/a | <pre>object({<br/>    full_load = string<br/>    cdc       = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_retry_failed_after_recreate_metadata"></a> [retry\_failed\_after\_recreate\_metadata](#input\_retry\_failed\_after\_recreate\_metadata) | Whether to retry validation of failures after regenerating metadata | `bool` | `true` | no |
 | <a name="input_s3_target_config"></a> [s3\_target\_config](#input\_s3\_target\_config) | n/a | <pre>object({<br/>    add_column_name       = bool<br/>    max_batch_interval    = number<br/>    min_file_size         = number<br/>    timestamp_column_name = string<br/>  })</pre> | <pre>{<br/>  "add_column_name": true,<br/>  "max_batch_interval": 3600,<br/>  "min_file_size": 32000,<br/>  "timestamp_column_name": "EXTRACTION_TIMESTAMP"<br/>}</pre> | no |
+| <a name="input_slack_webhook_secret_id"></a> [slack\_webhook\_secret\_id](#input\_slack\_webhook\_secret\_id) | webhook used to send dms alerts | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
 | <a name="input_valid_files_mutable"></a> [valid\_files\_mutable](#input\_valid\_files\_mutable) | If false, copy valid files to their destination bucket with a datetime infix | `bool` | `false` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC ID | `string` | n/a | yes |
@@ -158,5 +159,6 @@ This will be used to select the tables to be migrated.
 | [aws_security_group.metadata_generator_lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.replication_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_sns_topic.dms_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
+| [aws_sns_topic_subscription.slack](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_subscription) | resource |
 | [aws_vpc_security_group_egress_rule.replication_instance_outbound](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 <!-- END_TF_DOCS -->
