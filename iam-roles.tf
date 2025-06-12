@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 # IAM Role for DMS VPC Access
 resource "aws_iam_role" "dms" {
   # This has to be a specific name for some reason see https://repost.aws/questions/QU61eADUU7SnO-t7MmhxgfPA/dms-service-roles

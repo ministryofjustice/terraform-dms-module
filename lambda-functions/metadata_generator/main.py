@@ -290,8 +290,8 @@ class MetadataExtractor:
 def handler(event, context):  # pylint: disable=unused-argument
     db_secret_response = secretsmanager.get_secret_value(SecretId=db_secret_arn)
     db_secret = json.loads(db_secret_response["SecretString"])
-    db_identifier = db_secret.get("dbInstanceIdentifier", os.getenv("GLUE_CATALOG_DATABASE_NAME")) # identifies database in glue catalog
 
+    db_identifier = db_secret["dbInstanceIdentifier"]
     username = db_secret["username"]
     password = db_secret["password"]
     engine = db_secret.get("engine", os.getenv("ENGINE"))

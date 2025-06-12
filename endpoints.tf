@@ -1,12 +1,3 @@
-locals {
-  database_credentials = jsondecode(data.aws_secretsmanager_secret_version.database_credentials.secret_string)
-}
-data "aws_region" "current" {}
-
-data "aws_secretsmanager_secret_version" "database_credentials" {
-  secret_id = var.dms_source.secrets_manager_arn
-}
-
 # DMS Source Endpoint
 resource "aws_dms_endpoint" "source" {
   #checkov:skip=CKV_AWS_296: Use AWS managed KMS key

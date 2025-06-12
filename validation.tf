@@ -36,6 +36,34 @@ data "aws_iam_policy_document" "validation_lambda_function" {
       "${aws_s3_bucket.landing.arn}/*"
     ]
   }
+
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+
+    resources = [
+      var.dms_source.secrets_manager_arn
+    ]
+  }
+
+  # Lambda needs permissions on the KMS key to access the above secret
+  statement {
+    actions = [
+      "kms:DescribeKey",
+      "kms:Decrypt"
+    ]
+    resources = [
+      var.dms_source.secrets_manager_kms_arn
+    ]
+    condition {
+      test     = "StringLike"
+      variable = "kms:ViaService"
+      values = [
+        "secretsmanager.${data.aws_region.current.name}.amazonaws.com",
+      ]
+    }
+  }
 }
 
 module "validation_lambda_function" {
@@ -63,7 +91,7 @@ module "validation_lambda_function" {
     FAIL_BUCKET         = aws_s3_bucket.invalid.bucket
     METADATA_BUCKET     = aws_s3_bucket.validation_metadata.bucket
     METADATA_PATH       = ""
-    SLACK_SECRET_KEY    = "" # TODO: Handle properly
+    SLACK_SECRET_ID     = var.slack_webhook_secret_id
     VALID_FILES_MUTABLE = var.valid_files_mutable
   }
 
