@@ -224,7 +224,7 @@ class FileValidator:
         of the validation.
         """
         client = boto3.client("secretsmanager")
-        secrets = client.get_secret_value(SecretId=os.getenv("SLACK_SECRET_KEY"))
+        secrets = client.get_secret_value(SecretId=os.getenv("SLACK_SECRET_ARN"))
 
         self._validate_file(path=f"{self.bucket_from}/{self.key}")
         if self.errors:

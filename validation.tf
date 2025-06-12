@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "validation_lambda_function" {
     ]
 
     resources = [
-      var.dms_source.secrets_manager_arn
+      var.slack_webhook_secret_arn
     ]
   }
 
@@ -91,7 +91,7 @@ module "validation_lambda_function" {
     FAIL_BUCKET         = aws_s3_bucket.invalid.bucket
     METADATA_BUCKET     = aws_s3_bucket.validation_metadata.bucket
     METADATA_PATH       = ""
-    SLACK_SECRET_ID     = var.slack_webhook_secret_id
+    SLACK_SECRET_ARN    = var.slack_webhook_secret_arn
     VALID_FILES_MUTABLE = var.valid_files_mutable
   }
 

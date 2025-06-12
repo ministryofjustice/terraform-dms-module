@@ -151,8 +151,8 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
 
     resources = [
       var.glue_catalog_arn,
-      "${trimsuffix(var.glue_catalog_arn, ":catalog")}:database/${local.database_credentials["dbIdentifier"]}",
-      "${trimsuffix(var.glue_catalog_arn, ":catalog")}:table/${local.database_credentials["dbIdentifier"]}/*",
+      "${trimsuffix(var.glue_catalog_arn, ":catalog")}:database/${local.database_credentials["dbInstanceIdentifier"]}",
+      "${trimsuffix(var.glue_catalog_arn, ":catalog")}:table/${local.database_credentials["dbInstanceIdentifier"]}/*",
     ]
   }
 }
