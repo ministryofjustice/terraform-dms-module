@@ -422,6 +422,8 @@ def reprocess_failed_records():
             "Metadata", {}
         )
 
+        # Drop old x-amzn-trace-id if it exists in header
+        original_metadata.pop("x-amzn-trace-id", None)
         # Preserve existing metadata and add X-Ray trace ID
         updated_metadata = original_metadata.copy()
         updated_metadata["X-Amzn-Trace-Id"] = trace_id
