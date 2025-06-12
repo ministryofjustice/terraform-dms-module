@@ -224,7 +224,8 @@ class FileValidator:
         of the validation.
         """
         client = boto3.client("secretsmanager")
-        secrets = client.get_secret_value(SecretId=os.getenv("SLACK_SECRET_ARN"))
+        slack_secret = client.get_secret_value(SecretId=os.getenv("SLACK_SECRET_ARN"))
+        slack_webhook_url = slack_secret["SecretString"]
 
         self._validate_file(path=f"{self.bucket_from}/{self.key}")
         if self.errors:
@@ -255,7 +256,7 @@ class FileValidator:
 
             encoded_payload = json.dumps(payload).encode("utf-8")
             http.request(
-               method="POST", url=url, body=encoded_payload
+               method="POST", url=slack_webhook_url, body=encoded_payload
             )
         else:
             move_object(self.bucket_to, self.bucket_from, self.key, self.valid_files_mutable)
