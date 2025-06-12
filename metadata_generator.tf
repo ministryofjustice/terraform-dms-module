@@ -212,7 +212,6 @@ module "metadata_generator" {
     DATABASE_NAME                        = var.dms_source.sid
     GLUE_CATALOG_ARN                     = var.glue_catalog_arn
     GLUE_CATALOG_ROLE_ARN                = var.glue_catalog_role_arn
-    GLUE_CATALOG_DATABASE_NAME           = var.db
     USE_GLUE_CATALOG                     = var.write_metadata_to_glue_catalog
     DMS_MAPPING_RULES_BUCKET             = var.dms_mapping_rules.bucket
     DMS_MAPPING_RULES_KEY                = var.dms_mapping_rules.key
