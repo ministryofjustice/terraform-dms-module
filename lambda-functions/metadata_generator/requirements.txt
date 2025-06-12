@@ -1,5 +1,5 @@
 oracledb==2.5.1
-etl_manager==8.1.0
+etl_manager==9.0.0
 mojap-metadata==1.15.3
 python-dotenv==1.0.1
 setuptools==75.8.0
