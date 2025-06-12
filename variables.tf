@@ -136,7 +136,7 @@ variable "glue_catalog_role_arn" {
   description = "Which role to use to access glue catalog (optional)"
 }
 
-variable "slack_webhook_secret_arn" {
+variable "slack_webhook_secret_id" {
   type        = string
   description = "webhook used to send dms alerts"
 }
