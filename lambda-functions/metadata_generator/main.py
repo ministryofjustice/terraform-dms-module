@@ -362,7 +362,7 @@ def handler(event, context):  # pylint: disable=unused-argument
     glue_table_definitions = [
         gc.generate_from_meta(
             table,
-            db_identifier.replace("_", "-"),
+            db_identifier,
             f"s3://{raw_history_bucket}/{schema}/{table.name}",
         )
         for table in db_metadata
