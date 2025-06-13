@@ -293,7 +293,7 @@ def handler(event, context):  # pylint: disable=unused-argument
 
     db_identifier = db_secret["dbInstanceIdentifier"]
     username = db_secret["username"]
-    password = db_secret["password"]
+    password = db_secret["oracle_password"]
     engine = db_secret.get("engine", os.getenv("ENGINE"))
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))

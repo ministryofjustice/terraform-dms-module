@@ -8,7 +8,7 @@ resource "aws_dms_endpoint" "source" {
   database_name = var.dms_source.sid
   server_name   = local.database_credentials["host"]
   username      = local.database_credentials["username"]
-  password      = local.database_credentials["password"]
+  password      = "${local.database_credentials["oracle_password"]},${local.database_credentials["asm_password"]}"
   port          = local.database_credentials["port"]
 
   extra_connection_attributes = var.dms_source.extra_connection_attributes

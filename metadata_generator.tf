@@ -183,7 +183,7 @@ module "metadata_generator" {
   handler                 = "main.handler"
   runtime                 = "python3.12"
   memory_size             = 512
-  timeout                 = 60
+  timeout                 = 600
   architectures           = ["x86_64"]
   build_in_docker         = false
   store_on_s3             = true
