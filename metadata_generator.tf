@@ -206,7 +206,7 @@ module "metadata_generator" {
     METADATA_BUCKET                      = aws_s3_bucket.validation_metadata.bucket
     LANDING_BUCKET                       = aws_s3_bucket.landing.bucket
     INVALID_BUCKET                       = aws_s3_bucket.invalid.bucket
-    RAW_HISTORY_BUCKET                   = data.aws_s3_bucket.raw_history.bucket
+    RAW_HISTORY_BUCKET                   = local.raw_history_bucket_id
     LAMBDA_BUCKET                        = aws_s3_bucket.lambda.bucket
     ENGINE                               = var.dms_source.engine_name
     DATABASE_NAME                        = var.dms_source.sid
