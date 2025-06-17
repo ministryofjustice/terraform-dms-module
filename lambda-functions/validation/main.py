@@ -20,6 +20,16 @@ logger = logging.getLogger()
 log_level = os.getenv("LOG_LEVEL", "INFO")
 logger.setLevel(log_level)
 
+pass_bucket = os.environ["PASS_BUCKET"]
+fail_bucket = os.environ["FAIL_BUCKET"]
+metadata_bucket = os.environ["METADATA_BUCKET"]
+metadata_path = os.environ["METADATA_PATH"]
+valid_files_mutable = os.environ.get("VALID_FILES_MUTABLE", "false").lower() == "true"
+
+output_key_prefix = os.environ["OUTPUT_KEY_PREFIX"]
+output_key_suffix = os.environ["OUTPUT_KEY_SUFFIX"]
+
+
 client = boto3.client("s3")
 fs = s3fs.S3FileSystem()
 http = PoolManager()
@@ -32,7 +42,6 @@ type_lookup = {
     "int": "decimal",
     "binary": "binary",
 }
-
 
 
 def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool=False):
@@ -59,6 +68,15 @@ def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool=False)
     else:
         new_key = key
 
+    # Add the output key prefix and suffix if they are set and do not already exist
+    if output_key_prefix and not new_key.startswith(output_key_prefix):
+        new_key = f"{output_key_prefix}/{new_key}"
+    if output_key_suffix and not new_key.endswith(output_key_suffix):
+        new_key = f"{new_key}/{output_key_suffix}"
+
+    # Remove any double slashes that may have been introduced
+    new_key = re.sub(r"//+", "/", new_key)
+
     # Get object metadata
     head_response = client.head_object(Bucket=bucket_from, Key=key)
     current_metadata = head_response.get("Metadata", {})
@@ -66,7 +84,7 @@ def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool=False)
     copy_params = {
         "Bucket": bucket_to,
         "CopySource": {"Bucket": bucket_from, "Key": key},
-        "Key": new_key.lower(),
+        "Key": new_key,
         "ServerSideEncryption": "AES256",
         "ACL": "bucket-owner-full-control",
     }
@@ -427,15 +445,6 @@ class FileValidator:
 
 
 def handler(event, context):  # noqa: C901 pylint: disable=unused-argument
-    pass_bucket = os.environ["PASS_BUCKET"]
-    fail_bucket = os.environ["FAIL_BUCKET"]
-    metadata_bucket = os.environ["METADATA_BUCKET"]
-    metadata_path = os.environ["METADATA_PATH"]
-    valid_files_mutable = os.environ.get("VALID_FILES_MUTABLE", "false").lower() == "true"
-
-    logger.info(f"Event: {event}")
-    logger.info("Binary solo: 0001110101010111")
-
     # Get the bucket and key from the event
     record = event["Records"][0]
     bucket_from = record["s3"]["bucket"]["name"]

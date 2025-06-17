@@ -93,6 +93,8 @@ module "validation_lambda_function" {
     METADATA_PATH       = ""
     SLACK_SECRET_ARN    = var.slack_webhook_secret_id
     VALID_FILES_MUTABLE = var.valid_files_mutable
+    OUTPUT_KEY_PREFIX   = var.output_key_prefix
+    OUTPUT_KEY_SUFFIX   = var.output_key_suffix
   }
 
   source_path = [{
