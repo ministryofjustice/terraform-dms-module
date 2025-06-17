@@ -68,11 +68,19 @@ def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool=False)
     else:
         new_key = key
 
-    # Add the output key prefix and suffix if they are set and do not already exist
+    # Add the output key prefix
     if output_key_prefix and not new_key.startswith(output_key_prefix):
         new_key = f"{output_key_prefix}/{new_key}"
-    if output_key_suffix and not new_key.endswith(output_key_suffix):
-        new_key = f"{new_key}/{output_key_suffix}"
+    # Add the output key suffix before the .parquet extension
+    if output_key_suffix:
+        if new_key.endswith(".parquet"):
+            base = new_key[:-8]  # strip the '.parquet'
+            if not base.endswith(output_key_suffix):
+                new_key = f"{base}{output_key_suffix}.parquet"
+        else:
+            # If for some reason it doesn't end with .parquet, just append the suffix
+            if not new_key.endswith(output_key_suffix):
+                new_key += output_key_suffix
 
     # Remove any double slashes that may have been introduced
     new_key = re.sub(r"//+", "/", new_key)
