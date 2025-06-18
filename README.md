@@ -15,7 +15,7 @@ This Terraform module provisions an AWS DMS (Database Migration Service) setup f
 # Architecture Overview
 ![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/intial_branch/terraform-dms-module.png)
 
-*Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling, Glue integration*
+*Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling and Glue integration*
 
 ## Example
 
