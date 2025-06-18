@@ -22,7 +22,7 @@ variable "dms_replication_instance" {
     allocated_storage            = number
     availability_zone            = string
     engine_version               = string
-    kms_key_arn                  = optional(string)
+    kms_key_arn                  = string
     multi_az                     = bool
     replication_instance_class   = string
     inbound_cidr                 = string

@@ -8,6 +8,7 @@ locals {
 
 resource "aws_sns_topic" "dms_events" {
   name = "${var.db}-dms"
+  kms_master_key_id = var.dms_replication_instance.kms_key_arn
 }
 
 resource "aws_sns_topic_subscription" "slack" {

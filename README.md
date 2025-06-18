@@ -1,5 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
-# RDS Export Terraform Module
+# DMS Terraform Module
 
 ## Example
 
