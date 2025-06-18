@@ -1,5 +1,17 @@
 <!-- BEGIN_TF_DOCS -->
 # DMS Terraform Module
+This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. It automates the creation and configuration of the following components:
+- A DMS replication instance and endpoints
+- Oracle source configuration (via Secrets Manager)
+- S3 target configuration
+- CDC (Change Data Capture) and full-load replication tasks
+- Optional pre-migration assessment resources
+- Optional metadata publishing to AWS Glue Catalog
+- IAM roles and policies required for DMS operations
+- Lambda functions for metadata generation and validation
+- Alerts via Slack webhook
+
+![DMS Module Diagram](https://raw.githubusercontent.com/ministryofjustice/terraform-dms-module/intial_branch/dms-module.png)
 
 ## Example
 
