@@ -32,9 +32,9 @@ content: |-
 
 
   # Architecture Overview
-  ![DMS Module Diagram](https://raw.githubusercontent.com/ministryofjustice/terraform-dms-module/intial_branch/dms-module.png)
+  ![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/intial_branch/terraform-dms-module.png)
 
-  *Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling, Glue integration, and downstream Athena consumption.*
+  *Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling, Glue integration *
 
   ## Example
 

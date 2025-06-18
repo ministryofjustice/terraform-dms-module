@@ -9,55 +9,55 @@ terraform {
 }
 
 data "aws_availability_zones" "available" {}
-
-locals {
-  name = "test-dms"
-  tags = {
-    business-unit    = "HMPPS"
-    application      = "Data Engineering"
-    environment-name = "sandbox"
-    is-production    = "False"
-    owner            = "DMET"
-    team-name        = "DMET"
-    namespace        = "dmet-test"
-  }
+resource "aws_secretsmanager_secret" "dms_sandbox_secret" {
+  # checkov:skip=CKV2_AWS_57: Skipping because automatic rotation not needed.
+  name       = "dms-sandbox-secret"
+  kms_key_id = module.dms_test_kms.key_arn
 }
 
-module "dms" {
-  source = "github.com/ministryofjustice/analytical-platform//terraform/aws/modules/data-engineering/dms?ref=66a7d870"
+module "test_dms_implementation" {
+  source = "github.com/ministryofjustice/terraform-dms-module?ref=intial_branch"
 
-  environment = local.tags.environment-name
   vpc_id      = module.vpc.vpc_id
-  db          = aws_db_instance.dms_test.identifier
+  environment = local.tags.environment-name
 
+  db = aws_db_instance.dms_test.identifier
+  slack_webhook_secret_id = aws_secretsmanager_secret.slack_webhook.id
   dms_replication_instance = {
-    replication_instance_id    = aws_db_instance.dms_test.identifier
+    replication_instance_id    = "test-dms"
     subnet_ids                 = module.vpc.private_subnets
-    subnet_group_name          = local.name
+    subnet_group_name          = "test-dms"
     allocated_storage          = 20
     availability_zone          = data.aws_availability_zones.available.names[0]
     engine_version             = "3.5.4"
+    kms_key_arn                = module.dms_test_kms.key_arn
     multi_az                   = false
-    replication_instance_class = "dms.t2.micro"
+    replication_instance_class = "dms.t3.large"
     inbound_cidr               = module.vpc.vpc_cidr_block
+    apply_immediately          = true
   }
 
   dms_source = {
     engine_name                 = "oracle"
-    secrets_manager_arn         = "arn:aws:secretsmanager:eu-west-1:123456789012:secret:dms-user-secret"
+    secrets_manager_arn         = aws_secretsmanager_secret.dms_sandbox_secret.arn
+    secrets_manager_kms_arn     = module.dms_test_kms.key_arn
     sid                         = aws_db_instance.dms_test.db_name
     extra_connection_attributes = "addSupplementalLogging=N;useBfile=Y;useLogminerReader=N;"
-    cdc_start_time              = "2025-01-29T11:00:00Z"
+    cdc_start_time              = "2025-04-02T12:00:00Z"
   }
 
   replication_task_id = {
-    full_load = "${aws_db_instance.dms_test.identifier}-full-load"
-    cdc       = "${aws_db_instance.dms_test.identifier}-cdc"
+    full_load = "test-dms-full-load"
+    cdc       = "test-dms-cdc"
   }
 
-  dms_mapping_rules     = "${path.module}/mappings.json"
-  landing_bucket        = aws_s3_bucket.landing.bucket
-  landing_bucket_folder = "${local.tags.team-name}/${aws_db_instance.dms_test.identifier}"
+  dms_mapping_rules = {
+    bucket = aws_s3_object.mappings.bucket
+    key    = aws_s3_object.mappings.key
+  }
+  #output_bucket         = module.test_dms_rawhist
 
   tags = local.tags
+
+  glue_catalog_arn = "arn:aws:glue:eu-west-1:684969100054:catalog"
 }
