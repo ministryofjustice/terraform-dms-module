@@ -11,7 +11,11 @@ This Terraform module provisions an AWS DMS (Database Migration Service) setup f
 - Lambda functions for metadata generation and validation
 - Alerts via Slack webhook
 
+
+# Architecture Overview
 ![DMS Module Diagram](https://raw.githubusercontent.com/ministryofjustice/terraform-dms-module/intial_branch/dms-module.png)
+
+*Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling, Glue integration, and downstream Athena consumption.*
 
 ## Example
 
