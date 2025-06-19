@@ -81,6 +81,7 @@ module "test_dms_implementation" {
 
   tags = local.tags
 
+
   glue_catalog_arn = "arn:aws:glue:eu-west-1:684969100054:catalog"
 }
 ```
