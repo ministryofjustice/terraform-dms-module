@@ -29,6 +29,7 @@ db_secret_arn = os.getenv("DB_SECRET_ARN")
 retry_failed_after_recreate_metadata = os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
 use_glue_catalog = os.getenv("USE_GLUE_CATALOG", "true").lower() == "true"
 glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
+os.environ['AWS_STS_REGIONAL_ENDPOINTS'] = 'regional'
 
 def _get_glue_client():
     """
