@@ -155,6 +155,18 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
       "${trimsuffix(var.glue_catalog_arn, ":catalog")}:table/${local.database_credentials["dbInstanceIdentifier"]}/*",
     ]
   }
+
+  # Lambda can assume sts role
+  statement {
+    actions = [
+      "sts:TagSession",
+      "sts:AssumeRole"
+    ]
+
+    resources = [
+      var.glue_catalog_role_arn
+    ]
+  }
 }
 
 # Create security group for Lambda function
