@@ -45,7 +45,7 @@ module "test_dms_implementation" {
   vpc_id      = module.vpc.vpc_id
   environment = local.tags.environment-name
 
-  db = aws_db_instance.dms_test.identifier
+  db                      = aws_db_instance.dms_test.identifier
   slack_webhook_secret_id = aws_secretsmanager_secret.slack_webhook.id
   dms_replication_instance = {
     replication_instance_id    = "test-dms"
@@ -106,7 +106,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_glue_catalog_arn"></a> [glue\_catalog\_arn](#input\_glue\_catalog\_arn) | Which glue catalog to grant metadata generator permissions to (optional) | `string` | `""` | no |
 | <a name="input_glue_catalog_role_arn"></a> [glue\_catalog\_role\_arn](#input\_glue\_catalog\_role\_arn) | Which role to use to access glue catalog (optional) | `string` | `""` | no |
 | <a name="input_output_bucket"></a> [output\_bucket](#input\_output\_bucket) | The name of the output bucket (optional, bucket will be generated if not specified)<br/>    Note that if this is specified, it is assumed all related aws\_s3\_bucket\_* resources are being managed externally and so will not be generated within this module | `string` | `""` | no |
-| <a name="input_output_key_prefix"></a> [output\_key\_prefix](#input\_output\_key\_prefix) | The prefix to use for the output key in the S3 bucket | `string` | `""` | no |
+| <a name="input_output_key_prefix"></a> [output\_key\_prefix](#input\_output\_key\_prefix) | The prefix to use for the output key in the S3 bucket | `string` | `"dms_output"` | no |
 | <a name="input_output_key_suffix"></a> [output\_key\_suffix](#input\_output\_key\_suffix) | The suffix to use for the output key in the S3 bucket | `string` | `""` | no |
 | <a name="input_replication_task_id"></a> [replication\_task\_id](#input\_replication\_task\_id) | n/a | <pre>object({<br/>    full_load = string<br/>    cdc       = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_retry_failed_after_recreate_metadata"></a> [retry\_failed\_after\_recreate\_metadata](#input\_retry\_failed\_after\_recreate\_metadata) | Whether to retry validation of failures after regenerating metadata | `bool` | `true` | no |
