@@ -143,7 +143,7 @@ variable "slack_webhook_secret_id" {
 
 variable "output_key_prefix" {
   type        = string
-  default     = ""
+  default     = "dms_output"
   description = "The prefix to use for the output key in the S3 bucket"
 }
 

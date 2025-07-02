@@ -19,6 +19,7 @@ from sqlalchemy import create_engine
 patch_all()
 
 raw_history_bucket = os.getenv("RAW_HISTORY_BUCKET")
+output_key_prefix = os.getenv("OUTPUT_KEY_PREFIX")
 invalid_bucket_name = os.getenv("INVALID_BUCKET")
 landing_bucket_name = os.getenv("LANDING_BUCKET")
 dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
@@ -364,7 +365,7 @@ def handler(event, context):  # pylint: disable=unused-argument
         gc.generate_from_meta(
             table,
             db_identifier,
-            f"s3://{raw_history_bucket}/{schema}/{table.name}",
+            f"s3://{raw_history_bucket}/{output_key_prefix}/{schema}/{table.name.upper()}",
         )
         for table in db_metadata
     ]
