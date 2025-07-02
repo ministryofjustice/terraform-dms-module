@@ -23,7 +23,7 @@ module "test_dms_implementation" {
   vpc_id      = module.vpc.vpc_id
   environment = local.tags.environment-name
 
-  db = aws_db_instance.dms_test.identifier
+  db                      = aws_db_instance.dms_test.identifier
   slack_webhook_secret_id = aws_secretsmanager_secret.slack_webhook.id
   dms_replication_instance = {
     replication_instance_id    = "test-dms"
