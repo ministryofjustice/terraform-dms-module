@@ -11,12 +11,6 @@ resource "aws_sns_topic" "dms_events" {
   kms_master_key_id = var.dms_replication_instance.kms_key_arn
 }
 
-resource "aws_sns_topic_subscription" "slack" {
-  topic_arn = aws_sns_topic.dms_events.arn
-  protocol  = "https"
-  endpoint  = data.aws_secretsmanager_secret_version.slack_webhook.secret_string
-}
-
 resource "aws_dms_event_subscription" "task" {
   enabled          = true
   event_categories = []
