@@ -373,9 +373,6 @@ def handler(event, context):  # pylint: disable=unused-argument
 
     if use_glue_catalog:
         for table in glue_table_definitions:
-        
-
-
             primary_key_raw = table["TableInput"]["Parameters"].get("primary_key", "")
             primary_key_list = ast.literal_eval(primary_key_raw)
             table["TableInput"]["Parameters"].update(
