@@ -4,7 +4,6 @@ import logging
 import os
 import re
 import sys
-import ast
 from datetime import datetime
 
 import boto3
@@ -15,8 +14,7 @@ from mojap_metadata import Metadata
 from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
 from mojap_metadata.converters.glue_converter import GlueConverter
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
-from sqlalchemy import create_engine, event as sqlalchemy_event
-from sqlalchemy.exc import NoSuchTableError
+from sqlalchemy import create_engine
 
 patch_all()
 
@@ -241,36 +239,36 @@ class MetadataExtractor:
         return json.dumps(etl_dict)
 
     def get_table_metadata(self, schema, table) -> Metadata:
-            """
-            Reflects the physical object, but if reflection of 'foo_mv' fails,
-            retry on 'foo' and then let rename(_mv) do its work.
-            """
-            phys_name = table.lower()
-            try:
-                table_meta = self.sqlc.generate_to_meta(phys_name, schema)
-            except NoSuchTableError:
-                if phys_name.endswith("_mv"):
-                    stripped = phys_name[:-3]
-                    logger.warning(
-                        "Table %s not found, retrying reflection on materialized view base name %s",
-                        phys_name,
-                        stripped,
-                    )
-                    table_meta = self.sqlc.generate_to_meta(stripped, schema)
-                else:
-                    raise
+        """
+        Reflects the physical object, but if reflection of 'foo_mv' fails,
+        retry on 'foo' and then let rename(_mv) do its work.
+        """
+        phys_name = table.lower()
+        try:
+            table_meta = self.sqlc.generate_to_meta(phys_name, schema)
+        except NoSuchTableError:
+            if phys_name.endswith("_mv"):
+                stripped = phys_name[:-3]
+                logger.warning(
+                    "Table %s not found, retrying reflection on materialized view base name %s",
+                    phys_name,
+                    stripped,
+                )
+                table_meta = self.sqlc.generate_to_meta(stripped, schema)
+            else:
+                raise
 
-            logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
+        logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
 
-            # now your existing conversion steps
-            table_meta = self._manage_blob_columns(table_meta)
-            table_meta = self._convert_int_columns(table_meta)
-            table_meta = self._rename_materialised_view(table_meta)
-            table_meta = self._add_reference_columns(table_meta)
-            table_meta = self._process_exclusions(table_meta, schema, table)
-            table_meta.file_format = "parquet"
+        # now your existing conversion steps
+        table_meta = self._manage_blob_columns(table_meta)
+        table_meta = self._convert_int_columns(table_meta)
+        table_meta = self._rename_materialised_view(table_meta)
+        table_meta = self._add_reference_columns(table_meta)
+        table_meta = self._process_exclusions(table_meta, schema, table)
+        table_meta.file_format = "parquet"
 
-            return table_meta
+        return table_meta
 
     def _write_database_objects(self, bucket):
         database_objects = {
@@ -322,21 +320,12 @@ def handler(event, context):  # pylint: disable=unused-argument
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
 
 
-
     # TODO: Works for oracle databases. Need to add support for other databases
     port = "1521"
     dsn = f"{host}:{port}/?service_name={db_name}"
 
     db_string = f"{engine}://{username}:{password}@{dsn}"
-    engine = create_engine(
-        db_string,
-        connect_args={
-            # this becomes USERENV('MODULE') and USERENV('CLIENT_INFO')
-            "program": "repctl",
-            # this becomes USERENV('OS_USER')
-            "osuser": "rdsdb",
-        }
-    )    
+    engine = create_engine(db_string)
 
     response = s3.get_object(
         Bucket=dms_mapping_rules_bucket,
@@ -402,16 +391,6 @@ def handler(event, context):  # pylint: disable=unused-argument
 
     if use_glue_catalog:
         for table in glue_table_definitions:
-            primary_key_raw = table["TableInput"]["Parameters"].get("primary_key", "")
-            primary_key_list = ast.literal_eval(primary_key_raw)
-            table["TableInput"]["Parameters"].update(
-                {
-                 "source_primary_key": ", ".join(primary_key_list),
-                 "extraction_key": "extraction_timestamp, scn",
-                 "extraction_timestamp_column_name": "extraction_timestamp",
-                 "extraction_operation_column_name": "op"}
-            )
-            table["TableInput"]["Parameters"].pop("primary_key", None)
             try:
                 glue.get_table(DatabaseName=db_identifier, Name=table["TableInput"]["Name"], **glue_kwargs)
                 logger.info(f"Table {table['TableInput']['Name']} already exists")
