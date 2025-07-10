@@ -16,6 +16,7 @@ from mojap_metadata.converters.glue_converter import GlueConverter
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
 from sqlalchemy import create_engine
 from sqlalchemy.exc import NoSuchTableError
+import ast
 
 patch_all()
 
@@ -261,7 +262,6 @@ class MetadataExtractor:
 
         logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
 
-        # now your existing conversion steps
         table_meta = self._manage_blob_columns(table_meta)
         table_meta = self._convert_int_columns(table_meta)
         table_meta = self._rename_materialised_view(table_meta)
@@ -326,8 +326,15 @@ def handler(event, context):  # pylint: disable=unused-argument
     dsn = f"{host}:{port}/?service_name={db_name}"
 
     db_string = f"{engine}://{username}:{password}@{dsn}"
-    engine = create_engine(db_string)
-
+    engine = create_engine(
+        db_string,
+        connect_args={
+            # this becomes USERENV('MODULE') and USERENV('CLIENT_INFO')
+            "program": "repctl",
+            # this becomes USERENV('OS_USER')
+            "osuser": "rdsdb",
+        }
+    )
     response = s3.get_object(
         Bucket=dms_mapping_rules_bucket,
         Key=dms_mapping_rules_key
@@ -393,10 +400,13 @@ def handler(event, context):  # pylint: disable=unused-argument
     if use_glue_catalog:
         for table in glue_table_definitions:
             primary_key_raw = table["TableInput"]["Parameters"].get("primary_key", "")
-            primary_key_list = ast.literal_eval(primary_key_raw)
+            if not primary_key_raw:
+                primary_key_list = ""
+            else:    
+                primary_key_list = ",".join(ast.literal_eval(primary_key_raw))
             table["TableInput"]["Parameters"].update(
                 {
-                 "source_primary_key": ", ".join(primary_key_list),
+                 "source_primary_key": primary_key_list,
                  "extraction_key": "extraction_timestamp, scn",
                  "extraction_timestamp_column_name": "extraction_timestamp",
                  "extraction_operation_column_name": "op"}
