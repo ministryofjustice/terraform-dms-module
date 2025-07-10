@@ -80,7 +80,7 @@ locals {
         rule-target = "table"
         value       = replace(obj, "_MV", "")
         object-locator = {
-          schema-name = "MPTUSER"
+          schema-name = "%"
           table-name  = obj
         }
       }
