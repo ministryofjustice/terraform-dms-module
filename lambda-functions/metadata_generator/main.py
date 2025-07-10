@@ -15,7 +15,8 @@ from mojap_metadata import Metadata
 from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
 from mojap_metadata.converters.glue_converter import GlueConverter
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event as sqlalchemy_event
+from sqlalchemy.exc import NoSuchTableError
 
 patch_all()
 
@@ -240,17 +241,36 @@ class MetadataExtractor:
         return json.dumps(etl_dict)
 
     def get_table_metadata(self, schema, table) -> Metadata:
-        logger.info("Getting table metadata for table %s in schema %s", table, schema)
-        table_meta = self.sqlc.generate_to_meta(table.lower(), schema)
-        logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
-        table_meta = self._manage_blob_columns(table_meta)
-        table_meta = self._convert_int_columns(table_meta)
-        table_meta = self._rename_materialised_view(table_meta)
-        table_meta = self._add_reference_columns(table_meta)
-        table_meta = self._process_exclusions(table_meta, schema, table)
-        # table_meta = self._convert_metadata(table_meta)
-        table_meta.file_format = "parquet"
-        return table_meta
+            """
+            Reflects the physical object, but if reflection of 'foo_mv' fails,
+            retry on 'foo' and then let rename(_mv) do its work.
+            """
+            phys_name = table.lower()
+            try:
+                table_meta = self.sqlc.generate_to_meta(phys_name, schema)
+            except NoSuchTableError:
+                if phys_name.endswith("_mv"):
+                    stripped = phys_name[:-3]
+                    logger.warning(
+                        "Table %s not found, retrying reflection on materialized view base name %s",
+                        phys_name,
+                        stripped,
+                    )
+                    table_meta = self.sqlc.generate_to_meta(stripped, schema)
+                else:
+                    raise
+
+            logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
+
+            # now your existing conversion steps
+            table_meta = self._manage_blob_columns(table_meta)
+            table_meta = self._convert_int_columns(table_meta)
+            table_meta = self._rename_materialised_view(table_meta)
+            table_meta = self._add_reference_columns(table_meta)
+            table_meta = self._process_exclusions(table_meta, schema, table)
+            table_meta.file_format = "parquet"
+
+            return table_meta
 
     def _write_database_objects(self, bucket):
         database_objects = {
@@ -302,12 +322,21 @@ def handler(event, context):  # pylint: disable=unused-argument
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
 
 
+
     # TODO: Works for oracle databases. Need to add support for other databases
     port = "1521"
     dsn = f"{host}:{port}/?service_name={db_name}"
 
     db_string = f"{engine}://{username}:{password}@{dsn}"
-    engine = create_engine(db_string)
+    engine = create_engine(
+        db_string,
+        connect_args={
+            # this becomes USERENV('MODULE') and USERENV('CLIENT_INFO')
+            "program": "repctl",
+            # this becomes USERENV('OS_USER')
+            "osuser": "rdsdb",
+        }
+    )    
 
     response = s3.get_object(
         Bucket=dms_mapping_rules_bucket,
