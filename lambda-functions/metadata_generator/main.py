@@ -391,6 +391,16 @@ def handler(event, context):  # pylint: disable=unused-argument
 
     if use_glue_catalog:
         for table in glue_table_definitions:
+            primary_key_raw = table["TableInput"]["Parameters"].get("primary_key", "")
+            primary_key_list = ast.literal_eval(primary_key_raw)
+            table["TableInput"]["Parameters"].update(
+                {
+                 "source_primary_key": ", ".join(primary_key_list),
+                 "extraction_key": "extraction_timestamp, scn",
+                 "extraction_timestamp_column_name": "extraction_timestamp",
+                 "extraction_operation_column_name": "op"}
+            )
+            table["TableInput"]["Parameters"].pop("primary_key", None)
             try:
                 glue.get_table(DatabaseName=db_identifier, Name=table["TableInput"]["Name"], **glue_kwargs)
                 logger.info(f"Table {table['TableInput']['Name']} already exists")
