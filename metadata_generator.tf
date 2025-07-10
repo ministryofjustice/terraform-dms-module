@@ -194,8 +194,8 @@ module "metadata_generator" {
   description             = "Lambda to generate metadata for ${var.db} DMS data output"
   handler                 = "main.handler"
   runtime                 = "python3.12"
-  memory_size             = 512
-  timeout                 = 600
+  memory_size             = 4096
+  timeout                 = 900
   architectures           = ["x86_64"]
   build_in_docker         = false
   store_on_s3             = true
