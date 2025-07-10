@@ -15,6 +15,7 @@ from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
 from mojap_metadata.converters.glue_converter import GlueConverter
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
 from sqlalchemy import create_engine
+from sqlalchemy.exc import NoSuchTableError
 
 patch_all()
 
