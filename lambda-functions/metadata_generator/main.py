@@ -15,7 +15,6 @@ from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
 from mojap_metadata.converters.glue_converter import GlueConverter
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
 from sqlalchemy import create_engine
-from sqlalchemy.exc import NoSuchTableError
 import ast
 
 patch_all()
@@ -241,24 +240,10 @@ class MetadataExtractor:
         return json.dumps(etl_dict)
 
     def get_table_metadata(self, schema, table) -> Metadata:
-        """
-        Reflects the physical object, but if reflection of 'foo_mv' fails,
-        retry on 'foo' and then let rename(_mv) do its work.
-        """
-        phys_name = table.lower()
         try:
-            table_meta = self.sqlc.generate_to_meta(phys_name, schema)
-        except NoSuchTableError:
-            if phys_name.endswith("_mv"):
-                stripped = phys_name[:-3]
-                logger.warning(
-                    "Table %s not found, retrying reflection on materialized view base name %s",
-                    phys_name,
-                    stripped,
-                )
-                table_meta = self.sqlc.generate_to_meta(stripped, schema)
-            else:
-                raise
+            table_meta = self.sqlc.generate_to_meta(table.lower(), schema)
+        except Exception as e:
+            logger.error(f"Error getting table description for {table}: {e}")
 
         logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
 
