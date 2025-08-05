@@ -154,3 +154,41 @@ resource "aws_iam_role_policy" "dms_premigration" {
     ]
   })
 }
+
+resource "aws_iam_role" "eventbridge" {
+  name = "${var.db}-eventbridge"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "events.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole",
+        "Condition" : {
+          "StringEquals" : {
+            "aws:SourceAccount" : data.aws_caller_identity.current.id
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "eventbridge_sns_publish" {
+  name = "${var.db}-eventbridge-sns-publish"
+  role = aws_iam_role.eventbridge.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = "sns:Publish",
+        Resource = aws_sns_topic.dms_events.arn
+      }
+    ]
+  })
+}
+
