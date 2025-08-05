@@ -11,6 +11,24 @@ resource "aws_sns_topic" "dms_events" {
   kms_master_key_id = var.dms_replication_instance.kms_key_arn
 }
 
+resource "aws_sns_topic_policy" "dms_events" {
+  arn    = aws_sns_topic.dms_events.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
+}
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["SNS:Publish"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    resources = [aws_sns_topic.dms_events.arn]
+  }
+}
 resource "aws_sns_topic_subscription" "slack" {
   topic_arn = aws_sns_topic.dms_events.arn
   protocol  = "https"
