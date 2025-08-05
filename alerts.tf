@@ -29,6 +29,6 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
 
 resource "aws_cloudwatch_event_target" "dms_to_sns" {
   rule      = aws_cloudwatch_event_rule.dms_events.name
-  arn       = aws_sns_topic.dms_alerts.arn
+  arn       = aws_sns_topic.dms_events.arn
   target_id = "DMSAlertToSNS"
 }
