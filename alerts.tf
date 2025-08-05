@@ -1,8 +1,8 @@
 
 locals {
   source_ids = compact([
-    aws_dms_replication_task.full_load_replication_task.replication_task_id,
-    length(aws_dms_replication_task.cdc_replication_task) > 0 ? aws_dms_replication_task.cdc_replication_task[0].replication_task_id : null
+    aws_dms_replication_task.full_load_replication_task.replication_task_arn,
+    length(aws_dms_replication_task.cdc_replication_task) > 0 ? aws_dms_replication_task.cdc_replication_task[0].replication_task_arn : null
   ])
 }
 
@@ -25,4 +25,10 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
     source    = ["aws.dms"],
     resources = local.source_ids
   })
+}
+
+resource "aws_cloudwatch_event_target" "dms_to_sns" {
+  rule      = aws_cloudwatch_event_rule.dms_events.name
+  arn       = aws_sns_topic.dms_alerts.arn
+  target_id = "DMSAlertToSNS"
 }
