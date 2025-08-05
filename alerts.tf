@@ -11,30 +11,12 @@ resource "aws_sns_topic" "dms_events" {
   kms_master_key_id = var.dms_replication_instance.kms_key_arn
 }
 
-resource "aws_sns_topic_subscription" "slack" {
-  topic_arn = aws_sns_topic.dms_events.arn
-  protocol  = "https"
-  endpoint  = data.aws_secretsmanager_secret_version.slack_webhook.secret_string
-}
-
-resource "aws_dms_event_subscription" "task" {
-  enabled          = true
-  event_categories = []
-  name             = "${var.db}-task"
-  sns_topic_arn    = aws_sns_topic.dms_events.arn
-  source_ids       = local.source_ids
-  source_type      = "replication-task"
-
-  tags = var.tags
-}
-
-resource "aws_dms_event_subscription" "instance" {
-  enabled          = true
-  event_categories = []
-  name             = "${var.db}-instance"
-  sns_topic_arn    = aws_sns_topic.dms_events.arn
-  source_ids       = [aws_dms_replication_instance.instance.replication_instance_id]
-  source_type      = "replication-instance"
-
-  tags = var.tags
+resource "aws_cloudwatch_event_rule" "dms_events" {
+  name        = "${var.db}-dms-events"
+  role_arn    = aws_iam_role.eventbridge.arn
+  description = "Triggers when there is a change to dms state"
+  event_pattern = jsonencode({
+    source    = ["aws.dms"],
+    resources = local.source_ids
+  })
 }
