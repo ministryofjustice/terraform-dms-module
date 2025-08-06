@@ -54,19 +54,21 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
     input_paths = {
       category = "$.detail.category"
       event    = "$.detail.eventType"
-      detail   = "$.detail.detailMessage"
-      link     = "$.detail.resourceLink"
+      message  = "$.detail.detailMessage"
       time     = "$.time"
+      taskId   = "$.detail.replicationTaskIdentifier"
+      region   = "$.region"
     }
 
     input_template = <<TEMPLATE
-"Category : <category>"
-
-"event    : <event>"
-
-"<detail> at <time>"
-
-"<link>"
+Message: {
+  "Category": "<category>",
+  "Event": "<event>",
+  "Message": "<message>",
+  "Link": "https://console.aws.amazon.com/dms/v2/home?region=<region>#replicationTask:details/<taskId>",
+  "Time": "<time>"
+}
 TEMPLATE
   }
 }
+
