@@ -49,4 +49,25 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
   rule      = aws_cloudwatch_event_rule.dms_events.name
   arn       = aws_sns_topic.dms_events.arn
   target_id = "DMSAlertToSNS"
+
+  input_transformer {
+    input_paths = {
+      category = "$.detail.category"
+      detail   = "$.detail.detailMessage"
+      event    = "$.detail.eventType"
+      link     = "$.detail.resourceLink"
+      time     = "$.time"
+    }
+
+    input_template = <<TEMPLATE
+{
+  "Category": "<category>",
+  "Event": "<event>",
+  "Message": "<detail>",
+  "Link": "<link>",
+  "Time": "<time>"
 }
+TEMPLATE
+  }
+}
+
