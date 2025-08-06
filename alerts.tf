@@ -60,14 +60,10 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
     }
 
     input_template = <<TEMPLATE
-{
-  "Category": "<category>",
-  "Event": "<event>",
-  "Message": "<detail>",
-  "Link": "<link>",
-  "Time": "<time>"
-}
+Category : <category>
+event : <event>
+<detail>
+<link>
 TEMPLATE
   }
 }
-
