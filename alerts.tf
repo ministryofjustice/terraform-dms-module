@@ -38,16 +38,6 @@ resource "aws_sns_topic_subscription" "slack" {
 resource "aws_cloudwatch_event_rule" "dms_events" {
   name        = "${var.db}-dms-events"
   role_arn    = aws_iam_role.eventbridge.arn
-  description = "Triggers when there is a change to dms state"
-  event_pattern = jsonencode({
-    source    = ["aws.dms"],
-    resources = local.source_ids
-  })
-}
-
-resource "aws_cloudwatch_event_rule" "dms_events" {
-  name        = "${var.db}-dms-events"
-  role_arn    = aws_iam_role.eventbridge.arn
   description = "Triggers on DMS replication task state changes"
 
   event_pattern = jsonencode({
