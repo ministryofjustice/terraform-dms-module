@@ -54,19 +54,21 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
 
   input_transformer {
     input_paths = {
-      category = "$.detail.category"
-      event    = "$.detail.eventType"
-      message  = "$.detail.detailMessage"
-      link     = "$.detail.resourceLink"
-      taskArn  = "$.resources[0]"
-      time     = "$.time"
+      category  = "$.detail.category"
+      event     = "$.detail.eventType"
+      message   = "$.detail.detailMessage"
+      link      = "$.detail.resourceLink"
+      taskArn   = "$.resources[0]"
+      sourceId  = "$.detail.sourceId"
+      time      = "$.time"
     }
 
-input_template = <<TEMPLATE
+    input_template = <<TEMPLATE
 {
   "Category": "<category>",
   "Event":    "<event>",
   "TaskArn":  "<taskArn>",
+  "SourceId": "<sourceId>",
   "Message":  "<message>",
   "Link":     "<link>",
   "Time":     "<time>"
