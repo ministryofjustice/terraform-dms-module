@@ -45,6 +45,18 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
   })
 }
 
+resource "aws_cloudwatch_event_rule" "dms_events" {
+  name        = "${var.db}-dms-events"
+  role_arn    = aws_iam_role.eventbridge.arn
+  description = "Triggers on DMS replication task state changes"
+
+  event_pattern = jsonencode({
+    source      = ["aws.dms"],
+    "detail-type" = ["DMS Replication Task State Change"],
+    resources   = local.source_ids
+  })
+}
+
 resource "aws_cloudwatch_event_target" "dms_to_sns" {
   rule      = aws_cloudwatch_event_rule.dms_events.name
   arn       = aws_sns_topic.dms_events.arn
@@ -72,3 +84,4 @@ Message: {
 TEMPLATE
   }
 }
+
