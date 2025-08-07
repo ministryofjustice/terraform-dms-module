@@ -46,9 +46,10 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
 }
 
 resource "aws_cloudwatch_event_rule" "dms_events" {
-  name       = "${var.db}-dms-events"
-  role_arn   = aws_iam_role.eventbridge.arn
+  name        = "${var.db}-dms-events"
+  role_arn    = aws_iam_role.eventbridge.arn
   description = "Triggers on DMS replication task state changes"
+
   event_pattern = jsonencode({
     source      = ["aws.dms"],
     "detail-type" = ["DMS Replication Task State Change"],
