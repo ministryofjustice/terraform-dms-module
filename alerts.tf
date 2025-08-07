@@ -62,8 +62,8 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
       time     = "$.time"
     }
 
-    input_template = <<TEMPLATE
-Message: {
+input_template = <<TEMPLATE
+{
   "Category": "<category>",
   "Event":    "<event>",
   "TaskArn":  "<taskArn>",
