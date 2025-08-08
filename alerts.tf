@@ -113,7 +113,7 @@ resource "aws_cloudwatch_event_target" "dms_instance_to_sns" {
   "InstanceArn": "<instanceArn>",
   "Message":  "<message>",
   "Time":     "<time>",
-  "Link":     "<link>",
+  "Link":     "<link>"
 }
 TEMPLATE
   }
