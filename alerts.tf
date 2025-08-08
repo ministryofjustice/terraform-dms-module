@@ -41,9 +41,9 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
   description = "Triggers on DMS replication task state changes"
 
   event_pattern = jsonencode({
-    source      = ["aws.dms"],
+    source        = ["aws.dms"],
     "detail-type" = ["DMS Replication Task State Change"],
-    resources   = local.source_ids
+    resources     = local.source_ids
   })
 }
 
@@ -54,23 +54,20 @@ resource "aws_cloudwatch_event_target" "dms_to_sns" {
 
   input_transformer {
     input_paths = {
-      category  = "$.detail.category"
-      event     = "$.detail.eventType"
-      message   = "$.detail.detailMessage"
-      link      = "$.detail.resourceLink"
-      taskArn   = "$.resources[0]"
-      sourceId  = "$.detail.sourceId"
-      time      = "$.time"
+      category = "$.detail.category"
+      event    = "$.detail.eventType"
+      message  = "$.detail.detailMessage"
+      taskArn  = "$.resources[0]"
+      time     = "$.time"
     }
 
     input_template = <<TEMPLATE
 {
+  "SourceDB": "${var.db}",
   "Category": "<category>",
   "Event":    "<event>",
   "TaskArn":  "<taskArn>",
-  "SourceId": "<sourceId>",
   "Message":  "<message>",
-  "Link":     "<link>",
   "Time":     "<time>"
 }
 TEMPLATE
