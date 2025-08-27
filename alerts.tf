@@ -50,10 +50,8 @@ resource "aws_cloudwatch_event_rule" "dms_events" {
       eventId = [
         "DMS-EVENT-0069",
         "DMS-EVENT-0073",
-        "DMS-EVENT-0078",
         "DMS-EVENT-0079",
         "DMS-EVENT-0081",
-        "DMS-EVENT-0082",
         "DMS-EVENT-0091",
         "DMS-EVENT-0092",
         "DMS-EVENT-0093"
@@ -74,7 +72,8 @@ resource "aws_cloudwatch_event_rule" "dms_events_by_category" {
     detail = {
       category = [
         "Creation",
-        "ConfigurationChange"
+        "ConfigurationChange",
+        "Failure"
       ]
     }
   })
