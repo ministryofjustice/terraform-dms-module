@@ -138,42 +138,12 @@ TEMPLATE
 resource "aws_cloudwatch_event_rule" "dms_instance_events" {
   name        = "${var.db}-dms-instance-events"
   role_arn    = aws_iam_role.eventbridge.arn
-  description = "Triggers on DMS replication instance state changes for listed eventIDs"
+  description = "Triggers on DMS replication instance state changes"
 
   event_pattern = jsonencode({
     source        = ["aws.dms"],
     "detail-type" = ["DMS Replication Instance State Change"],
     resources     = [aws_dms_replication_instance.instance.replication_instance_arn],
-    detail = {
-      eventId = [
-        "DMS-EVENT-0067",
-        "DMS-EVENT-0066",
-        "DMS-EVENT-0012",
-        "DMS-EVENT-0018",
-        "DMS-EVENT-0024",
-        "DMS-EVENT-0030",
-        "DMS-EVENT-0026",
-        "DMS-EVENT-0005",
-        "DMS-EVENT-0003",
-        "DMS-EVENT-0014",
-        "DMS-EVENT-0017",
-        "DMS-EVENT-0025",
-        "DMS-EVENT-0029",
-        "DMS-EVENT-0047",
-        "DMS-EVENT-0027",
-        "DMS-EVENT-0068",
-        "DMS-EVENT-0034",
-        "DMS-EVENT-0031",
-        "DMS-EVENT-0036",
-        "DMS-EVENT-0037",
-        "DMS-EVENT-0013",
-        "DMS-EVENT-0049",
-        "DMS-EVENT-0050",
-        "DMS-EVENT-0051",
-        "DMS-EVENT-0015",
-        "DMS-EVENT-0007"
-      ]
-    }
   })
 }
 
