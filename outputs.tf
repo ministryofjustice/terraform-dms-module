@@ -21,6 +21,6 @@ output "validation_lambda_arn" {
 }
 
 output "dms_cdc_task_arn" {
-  value       = aws_dms_replication_task.cdc_replication_task.replication_task_arn
+  value       = one(aws_dms_replication_task.cdc_replication_task[*].replication_task_arn)
   description = "The ARN for the AWS DMS cdc task ARN"
 }
