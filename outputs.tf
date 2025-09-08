@@ -19,3 +19,8 @@ output "validation_lambda_arn" {
   value       = module.validation_lambda_function.lambda_function_arn
   description = "The ARN for the validation AWS Lambda function"
 }
+
+output "dms_cdc_task_arn" {
+  value       = aws_dms_replication_task.cdc_replication_task.replication_task_arn
+  description = "The ARN for the AWS DMS cdc task ARN"
+}
