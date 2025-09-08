@@ -121,6 +121,7 @@ This will be used to select the tables to be migrated.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_dms_cdc_task_arn"></a> [dms\_cdc\_task\_arn](#output\_dms\_cdc\_task\_arn) | The ARN for the AWS DMS cdc task ARN |
 | <a name="output_dms_full_load_task_arn"></a> [dms\_full\_load\_task\_arn](#output\_dms\_full\_load\_task\_arn) | The ARN for the AWS DMS full-load task ARN |
 | <a name="output_dms_role_arn"></a> [dms\_role\_arn](#output\_dms\_role\_arn) | The ARN for the AWS role created for the DMS target endpoint |
 | <a name="output_metadata_generator_lambda_arn"></a> [metadata\_generator\_lambda\_arn](#output\_metadata\_generator\_lambda\_arn) | The ARN for the metadata\_generator AWS Lambda function |
