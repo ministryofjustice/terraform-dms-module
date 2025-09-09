@@ -175,3 +175,77 @@ resource "aws_cloudwatch_event_target" "dms_instance_to_sns" {
 TEMPLATE
   }
 }
+
+# ------------------ EventBridge CloudWatch Logs ------------------
+resource "aws_cloudwatch_log_group" "eventbridge" {
+  name = "aws/events/${var.db}/logs"
+
+  log_group_class   = "STANDARD"
+  retention_in_days = 0
+  tags              = var.tags
+}
+
+data "aws_iam_policy_document" "eventbridge" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream"
+    ]
+
+    resources = [
+      "${aws_cloudwatch_log_group.eventbridge.arn}:*"
+    ]
+
+    principals {
+      type = "Service"
+      identifiers = [
+        "events.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
+    }
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:PutLogEvents"
+    ]
+
+    resources = [
+      "${aws_cloudwatch_log_group.eventbridge.arn}:*:*"
+    ]
+
+    principals {
+      type = "Service"
+      identifiers = [
+        "events.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
+    }
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_cloudwatch_event_rule.dms_events.arn, aws_cloudwatch_event_rule.dms_events_by_category.arn, aws_cloudwatch_event_rule.dms_instance_events.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "eventbridge" {
+  policy_document = data.aws_iam_policy_document.eventbridge.json
+  policy_name     = "eventbridge-log-publishing-policy"
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_events" {
+  rule = aws_cloudwatch_event_rule.dms_events.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_events_by_category" {
+  rule = aws_cloudwatch_event_rule.dms_events_by_category.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
+  rule = aws_cloudwatch_event_rule.dms_instance_events.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}
