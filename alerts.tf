@@ -189,31 +189,9 @@ data "aws_iam_policy_document" "eventbridge" {
   statement {
     effect = "Allow"
     actions = [
-      "logs:CreateLogStream"
-    ]
-
-    resources = [
-      "${aws_cloudwatch_log_group.eventbridge.arn}:*"
-    ]
-
-    principals {
-      type = "Service"
-      identifiers = [
-        "events.amazonaws.com",
-        "delivery.logs.amazonaws.com"
-      ]
-    }
-  }
-  statement {
-    effect = "Allow"
-    actions = [
+      "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-
-    resources = [
-      "${aws_cloudwatch_log_group.eventbridge.arn}:*:*"
-    ]
-
     principals {
       type = "Service"
       identifiers = [
@@ -221,12 +199,9 @@ data "aws_iam_policy_document" "eventbridge" {
         "delivery.logs.amazonaws.com"
       ]
     }
-
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_cloudwatch_event_rule.dms_events.arn, aws_cloudwatch_event_rule.dms_events_by_category.arn, aws_cloudwatch_event_rule.dms_instance_events.arn]
-      variable = "aws:SourceArn"
-    }
+    resources = [
+      "${aws_cloudwatch_log_group.eventbridge.arn}:/aws/events/*:*"
+    ]
   }
 }
 
