@@ -175,3 +175,52 @@ resource "aws_cloudwatch_event_target" "dms_instance_to_sns" {
 TEMPLATE
   }
 }
+
+# ------------------ EventBridge CloudWatch Logs ------------------
+resource "aws_cloudwatch_log_group" "eventbridge" {
+  name = "${var.db}-events-logs"
+
+  log_group_class   = "STANDARD"
+  retention_in_days = 0
+  tags              = var.tags
+}
+
+data "aws_iam_policy_document" "eventbridge" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "events.amazonaws.com",
+        "delivery.logs.amazonaws.com"
+      ]
+    }
+    resources = [
+      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:log-group:${aws_cloudwatch_log_group.eventbridge.name}:*"
+    ]
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "eventbridge" {
+  policy_document = data.aws_iam_policy_document.eventbridge.json
+  policy_name     = "eventbridge-log-publishing-policy"
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_events" {
+  rule = aws_cloudwatch_event_rule.dms_events.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_events_by_category" {
+  rule = aws_cloudwatch_event_rule.dms_events_by_category.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}
+
+resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
+  rule = aws_cloudwatch_event_rule.dms_instance_events.name
+  arn  = aws_cloudwatch_log_group.eventbridge.arn
+}

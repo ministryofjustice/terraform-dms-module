@@ -192,3 +192,21 @@ resource "aws_iam_role_policy" "eventbridge_sns_publish" {
   })
 }
 
+resource "aws_iam_role_policy" "eventbridge_cloudwatch_publish" {
+  name = "${var.db}-eventbridge-cloudwatch-publish"
+  role = aws_iam_role.eventbridge.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:PutLogEvents",
+          "logs:CreateLogStream"
+        ]
+        Resource = "${aws_cloudwatch_log_group.eventbridge.arn}:*"
+      }
+    ]
+  })
+}
