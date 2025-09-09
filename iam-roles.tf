@@ -205,7 +205,7 @@ resource "aws_iam_role_policy" "eventbridge_cloudwatch_publish" {
           "logs:PutLogEvents",
           "logs:CreateLogStream"
         ]
-        Resource = aws_cloudwatch_log_group.eventbridge.arn
+        Resource = "${aws_cloudwatch_log_group.eventbridge.arn}:*"
       }
     ]
   })
