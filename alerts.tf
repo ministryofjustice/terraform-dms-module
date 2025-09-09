@@ -178,7 +178,7 @@ TEMPLATE
 
 # ------------------ EventBridge CloudWatch Logs ------------------
 resource "aws_cloudwatch_log_group" "eventbridge" {
-  name = "aws/events/${var.db}/logs"
+  name = "${var.db}_events_logs"
 
   log_group_class   = "STANDARD"
   retention_in_days = 0
