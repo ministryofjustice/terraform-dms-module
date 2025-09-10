@@ -207,7 +207,7 @@ data "aws_iam_policy_document" "eventbridge" {
 
 resource "aws_cloudwatch_log_resource_policy" "eventbridge" {
   policy_document = data.aws_iam_policy_document.eventbridge.json
-  policy_name     = "eventbridge-log-publishing-policy"
+  policy_name     = "eventbridge-log-publishing-policy-${var.db}"
 }
 
 resource "aws_cloudwatch_event_target" "eventbridge_dms_events" {
