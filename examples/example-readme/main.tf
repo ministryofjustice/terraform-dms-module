@@ -34,7 +34,7 @@ module "test_dms_implementation" {
     engine_version             = "3.5.4"
     kms_key_arn                = module.dms_test_kms.key_arn
     multi_az                   = false
-    replication_instance_class = "dms.t3.large"
+    replication_instance_class = "dms.t3.medium"
     inbound_cidr               = module.vpc.vpc_cidr_block
     apply_immediately          = true
   }
@@ -52,15 +52,14 @@ module "test_dms_implementation" {
     full_load = "test-dms-full-load"
     cdc       = "test-dms-cdc"
   }
-
+  
   dms_mapping_rules = {
     bucket = aws_s3_object.mappings.bucket
     key    = aws_s3_object.mappings.key
   }
-  #output_bucket         = module.test_dms_rawhist
 
   tags = local.tags
 
-
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:684969100054:catalog"
+  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }

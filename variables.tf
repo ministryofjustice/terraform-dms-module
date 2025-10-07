@@ -103,7 +103,7 @@ variable "tags" {
 variable "create_premigration_assessement_resources" {
   type        = bool
   default     = false
-  description = "whether to create pre-requisites for DMS PreMigration Assessment to be run manually"
+  description = "Whether to create pre-requisites for DMS PreMigration Assessment to be run manually"
 }
 
 variable "retry_failed_after_recreate_metadata" {
@@ -138,7 +138,7 @@ variable "glue_catalog_role_arn" {
 
 variable "slack_webhook_secret_id" {
   type        = string
-  description = "webhook used to send dms alerts"
+  description = "Webhook used to send DMS alerts"
 }
 
 variable "output_key_prefix" {
