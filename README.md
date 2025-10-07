@@ -1,11 +1,9 @@
 <!-- BEGIN_TF_DOCS -->
 # DMS Terraform Module
-This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. 
-
-It automates the creation and configuration of the following components:
+This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. It automates the creation and configuration of the following components:
 - A DMS replication instance and endpoints
 - Oracle source configuration (via Secrets Manager)
-- S3 target configuration and buckets
+- S3 target configuration
 - CDC (Change Data Capture) and full-load replication tasks
 - Optional pre-migration assessment resources
 - Optional metadata publishing to AWS Glue Catalog
@@ -13,15 +11,11 @@ It automates the creation and configuration of the following components:
 - Lambda functions for metadata generation and validation
 - Alerts via Slack webhook
 
-The module requires the below components:
-- A private VPC, endpoints, subnets, route tables and routes, network ACLs, transit gateway attachements and VPC flow logs
-- A KMS key to encode secrets and traffic
-- Slack webhook and database connection configuration via Secrets Manager
 
 # Architecture Overview
-![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/main/terraform-dms-module.excalidraw.png)
+![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/main/terraform-dms-module.png)
 
-*End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling and Glue integration*
+*Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling and Glue integration*
 
 ## Example
 
@@ -62,7 +56,7 @@ module "test_dms_implementation" {
     engine_version             = "3.5.4"
     kms_key_arn                = module.dms_test_kms.key_arn
     multi_az                   = false
-    replication_instance_class = "dms.t3.large"
+    replication_instance_class = "dms.t3.medium"
     inbound_cidr               = module.vpc.vpc_cidr_block
     apply_immediately          = true
   }
@@ -80,42 +74,29 @@ module "test_dms_implementation" {
     full_load = "test-dms-full-load"
     cdc       = "test-dms-cdc"
   }
-
+  
   dms_mapping_rules = {
     bucket = aws_s3_object.mappings.bucket
     key    = aws_s3_object.mappings.key
   }
-  #output_bucket         = module.test_dms_rawhist
 
   tags = local.tags
 
-
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:684969100054:catalog"
+  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }
 ```
 
 ## Note
 
-Update the mappings.json and upload to the relevant S3 bucket to specify the mappings for the DMS task. This will be used to select the tables to be migrated.
-
-```json
-{
-    "schema": "ADMIN",
-    "objects_from": "oracle19_sandbox",
-    "extraction_date": "2024-06-25T13:47:00.688074",
-    "objects": [
-        "TEST_DATA"
-    ],
-    "blobs": [],
-    "columns_to_exclude":[]
-}
-```
+Update the mappings.json to specify the mappings for the DMS task.
+This will be used to select the tables to be migrated.
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_premigration_assessement_resources"></a> [create\_premigration\_assessement\_resources](#input\_create\_premigration\_assessement\_resources) | whether to create pre-requisites for DMS PreMigration Assessment to be run manually | `bool` | `false` | no |
+| <a name="input_create_premigration_assessement_resources"></a> [create\_premigration\_assessement\_resources](#input\_create\_premigration\_assessement\_resources) | Whether to create pre-requisites for DMS PreMigration Assessment to be run manually | `bool` | `false` | no |
 | <a name="input_db"></a> [db](#input\_db) | The database name | `string` | n/a | yes |
 | <a name="input_dms_mapping_rules"></a> [dms\_mapping\_rules](#input\_dms\_mapping\_rules) | The path to the mapping rules file | <pre>object({<br/>    bucket = string<br/>    key    = string<br/>  })</pre> | n/a | yes |
 | <a name="input_dms_replication_instance"></a> [dms\_replication\_instance](#input\_dms\_replication\_instance) | n/a | <pre>object({<br/>    replication_instance_id      = string<br/>    subnet_group_id              = optional(string)<br/>    subnet_group_name            = optional(string)<br/>    subnet_ids                   = optional(list(string))<br/>    allocated_storage            = number<br/>    availability_zone            = string<br/>    engine_version               = string<br/>    kms_key_arn                  = string<br/>    multi_az                     = bool<br/>    replication_instance_class   = string<br/>    inbound_cidr                 = string<br/>    apply_immediately            = optional(bool, false)<br/>    preferred_maintenance_window = optional(string, "sun:10:30-sun:14:30")<br/>  })</pre> | n/a | yes |
@@ -129,7 +110,7 @@ Update the mappings.json and upload to the relevant S3 bucket to specify the map
 | <a name="input_replication_task_id"></a> [replication\_task\_id](#input\_replication\_task\_id) | n/a | <pre>object({<br/>    full_load = string<br/>    cdc       = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_retry_failed_after_recreate_metadata"></a> [retry\_failed\_after\_recreate\_metadata](#input\_retry\_failed\_after\_recreate\_metadata) | Whether to retry validation of failures after regenerating metadata | `bool` | `true` | no |
 | <a name="input_s3_target_config"></a> [s3\_target\_config](#input\_s3\_target\_config) | n/a | <pre>object({<br/>    add_column_name       = bool<br/>    max_batch_interval    = number<br/>    min_file_size         = number<br/>    timestamp_column_name = string<br/>  })</pre> | <pre>{<br/>  "add_column_name": true,<br/>  "max_batch_interval": 3600,<br/>  "min_file_size": 32000,<br/>  "timestamp_column_name": "EXTRACTION_TIMESTAMP"<br/>}</pre> | no |
-| <a name="input_slack_webhook_secret_id"></a> [slack\_webhook\_secret\_id](#input\_slack\_webhook\_secret\_id) | webhook used to send dms alerts | `string` | n/a | yes |
+| <a name="input_slack_webhook_secret_id"></a> [slack\_webhook\_secret\_id](#input\_slack\_webhook\_secret\_id) | Webhook used to send DMS alerts | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
 | <a name="input_valid_files_mutable"></a> [valid\_files\_mutable](#input\_valid\_files\_mutable) | If false, copy valid files to their destination bucket with a datetime infix | `bool` | `false` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC ID | `string` | n/a | yes |
