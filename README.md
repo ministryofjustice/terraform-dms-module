@@ -1,9 +1,11 @@
 <!-- BEGIN_TF_DOCS -->
 # DMS Terraform Module
-This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. It automates the creation and configuration of the following components:
+This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. 
+
+It automates the creation and configuration of the following components:
 - A DMS replication instance and endpoints
 - Oracle source configuration (via Secrets Manager)
-- S3 target configuration
+- S3 target configuration and buckets
 - CDC (Change Data Capture) and full-load replication tasks
 - Optional pre-migration assessment resources
 - Optional metadata publishing to AWS Glue Catalog
@@ -11,11 +13,15 @@ This Terraform module provisions an AWS DMS (Database Migration Service) setup f
 - Lambda functions for metadata generation and validation
 - Alerts via Slack webhook
 
+The module requires the below components:
+- A private VPC, endpoints, subnets, route tables and routes, network ACLs, transit gateway attachements and VPC flow logs
+- A KMS key to encode secrets and traffic
+- Slack webhook and database connection configuration via Secrets Manager
 
 # Architecture Overview
-![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/main/terraform-dms-module.png)
+![DMS Module Diagram](https://github.com/ministryofjustice/terraform-dms-module/blob/main/terraform-dms-module.excalidraw.png)
 
-*Figure: End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling and Glue integration*
+*End-to-end DMS pipeline for Oracle to S3 replication with validation, landing, failure handling and Glue integration*
 
 ## Example
 
@@ -91,6 +97,19 @@ module "test_dms_implementation" {
 
 Update the mappings.json to specify the mappings for the DMS task.
 This will be used to select the tables to be migrated.
+
+```json
+{
+    "schema": "ADMIN",
+    "objects_from": "oracle19_sandbox",
+    "extraction_date": "2024-06-25T13:47:00.688074",
+    "objects": [
+        "TEST_DATA"
+    ],
+    "blobs": [],
+    "columns_to_exclude":[]
+}
+```
 
 ## Inputs
 
