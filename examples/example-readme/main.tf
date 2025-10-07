@@ -18,7 +18,7 @@ resource "aws_secretsmanager_secret" "dms_sandbox_secret" {
 module "test_dms_implementation" {
   # checkov:skip=CKV_TF_1: ignore check in example
   # checkov:skip=CKV_TF_2: ignore check in example
-  source = "github.com/ministryofjustice/terraform-dms-module"
+  source = "github.com/ministryofjustice/terraform-dms-module?ref=test"
 
   vpc_id      = module.vpc.vpc_id
   environment = local.tags.environment-name
@@ -34,7 +34,7 @@ module "test_dms_implementation" {
     engine_version             = "3.5.4"
     kms_key_arn                = module.dms_test_kms.key_arn
     multi_az                   = false
-    replication_instance_class = "dms.t3.large"
+    replication_instance_class = "dms.t3.medium"
     inbound_cidr               = module.vpc.vpc_cidr_block
     apply_immediately          = true
   }
@@ -57,10 +57,9 @@ module "test_dms_implementation" {
     bucket = aws_s3_object.mappings.bucket
     key    = aws_s3_object.mappings.key
   }
-  #output_bucket         = module.test_dms_rawhist
 
   tags = local.tags
 
-
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:684969100054:catalog"
+  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }
