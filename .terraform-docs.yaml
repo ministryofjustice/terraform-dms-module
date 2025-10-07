@@ -18,7 +18,7 @@ output:
     {{- printf "\n" -}}
 
 content: |-
-# DMS Terraform Module
+  # DMS Terraform Module
   This Terraform module provisions an AWS DMS (Database Migration Service) setup for replicating data from an Oracle database to an S3-based data lake architecture. 
 
   It automates the creation and configuration of the following components:
