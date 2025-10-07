@@ -40,7 +40,7 @@ resource "aws_secretsmanager_secret" "dms_sandbox_secret" {
 module "test_dms_implementation" {
   # checkov:skip=CKV_TF_1: ignore check in example
   # checkov:skip=CKV_TF_2: ignore check in example
-  source = "github.com/ministryofjustice/terraform-dms-module/?ref=b190c92217786c0454b756996cdb2fcb190256db"
+  source = "github.com/ministryofjustice/terraform-dms-module?ref=test"
 
   vpc_id      = module.vpc.vpc_id
   environment = local.tags.environment-name
