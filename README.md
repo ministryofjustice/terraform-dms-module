@@ -11,10 +11,10 @@ It automates the creation and configuration of the following components:
 - Optional metadata publishing to AWS Glue Catalog
 - IAM roles and policies required for DMS operations
 - Lambda functions for metadata generation and validation
-- Alerts via Slack webhook
+- EventBridge and SNS for alerts and notifications to Slack
 
 The module requires the below components:
-- A private VPC, endpoints, subnets, route tables and routes, network ACLs, transit gateway attachements and VPC flow logs
+- A private VPC
 - A KMS key to encode secrets and traffic
 - Slack webhook and database connection configuration via Secrets Manager
 
