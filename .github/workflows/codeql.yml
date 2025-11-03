@@ -1,0 +1,42 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [ main ]        # add other default/release branches if needed
+  pull_request:
+    branches: [ main ]        # Scorecard looks for pre-merge PR runs
+  schedule:
+    - cron: '0 3 * * 1'       # weekly scan
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write   # required to upload alerts
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python']  # adjust to your repo
+        # Supported: cpp, csharp, go, java-kotlin, javascript-typescript, python, ruby, rust, swift, actions
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      # For compiled languages, keep autobuild; otherwise it's a no-op
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # If autobuild isn't enough, replace with your own build steps:
+      # - run: mvn -B -DskipTests package
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
