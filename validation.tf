@@ -82,6 +82,8 @@ module "validation_lambda_function" {
   s3_bucket               = aws_s3_bucket.lambda.bucket
   s3_object_storage_class = "STANDARD"
   s3_prefix               = "validation/"
+  tracing_mode           = "Active"
+  attach_tracing_policy    = true
 
   attach_policy_json = true
   policy_json        = data.aws_iam_policy_document.validation_lambda_function.json
