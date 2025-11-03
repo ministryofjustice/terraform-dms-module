@@ -152,3 +152,8 @@ variable "output_key_suffix" {
   default     = ""
   description = "The suffix to use for the output key in the S3 bucket"
 }
+
+variable "logs_kms_key_arn" {
+  description = "KMS CMK ARN for CloudWatch Logs encryption"
+  type        = string
+}

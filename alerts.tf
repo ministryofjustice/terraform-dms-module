@@ -182,6 +182,7 @@ resource "aws_cloudwatch_log_group" "eventbridge" {
 
   log_group_class   = "STANDARD"
   retention_in_days = 0
+  kms_key_id        = var.logs_kms_key_arn
   tags              = var.tags
 }
 
