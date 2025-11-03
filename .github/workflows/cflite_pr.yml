@@ -15,7 +15,7 @@ jobs:
       id: build
       uses: google/clusterfuzzlite/actions/build_fuzzers@v1
       with:
-        language: c++          # change to your language
+        language: hcl
         github-token: ${{ secrets.GITHUB_TOKEN }}
         sanitizer: ${{ matrix.sanitizer }}
     - name: Run Fuzzers (${{ matrix.sanitizer }})
