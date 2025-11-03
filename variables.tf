@@ -157,3 +157,8 @@ variable "logs_kms_key_arn" {
   description = "KMS CMK ARN for CloudWatch Logs encryption"
   type        = string
 }
+
+variable "cw_logs_kms_arn" {
+  description = "CMK ARN for CloudWatch Logs"
+  type        = string
+}
