@@ -1,0 +1,32 @@
+package test
+
+import (
+	"testing"
+	"os"
+
+	"github.com/gruntwork-io/terratest/modules/terraform"
+)
+
+func TestTerraformDmsModule_Default(t *testing.T) {
+	// Optional: allow skipping tests in CI if needed
+	if os.Getenv("SKIP_TERRAFORM_TESTS") == "true" {
+		t.Skip("Skipping Terraform tests because SKIP_TERRAFORM_TESTS is set")
+	}
+
+	terraformOptions := &terraform.Options{
+		// Path to the Terraform code to be tested.
+		// Here we assume the module lives in the repo root
+		TerraformDir: "..",
+
+		// If your module requires variables, set them here:
+		// Vars: map[string]interface{}{
+		//   "example_var": "value",
+		// },
+	}
+
+	// Ensure resources are cleaned up at the end
+	defer terraform.Destroy(t, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply`
+	terraform.InitAndApply(t, terraformOptions)
+}
