@@ -1,32 +1,39 @@
-package test
+name: Terratest (Plan Only, No AWS Credentials)
 
-import (
-	"testing"
-	"os"
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
 
-	"github.com/gruntwork-io/terratest/modules/terraform"
-)
+jobs:
+  terratest:
+    runs-on: ubuntu-latest
 
-func TestTerraformDmsModule_Default(t *testing.T) {
-	// Optional: allow skipping tests in CI if needed
-	if os.Getenv("SKIP_TERRAFORM_TESTS") == "true" {
-		t.Skip("Skipping Terraform tests because SKIP_TERRAFORM_TESTS is set")
-	}
+    permissions:
+      contents: read    # no AWS permissions at all
 
-	terraformOptions := &terraform.Options{
-		// Path to the Terraform code to be tested.
-		// Here we assume the module lives in the repo root
-		TerraformDir: "..",
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-		// If your module requires variables, set them here:
-		// Vars: map[string]interface{}{
-		//   "example_var": "value",
-		// },
-	}
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
 
-	// Ensure resources are cleaned up at the end
-	defer terraform.Destroy(t, terraformOptions)
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.5"
 
-	// This will run `terraform init` and `terraform apply`
-	terraform.InitAndApply(t, terraformOptions)
-}
+      # --- IMPORTANT ---
+      # Terratest will call Terraform inside ./test/terraform_root_module_test.go.
+      # We do NOT provide AWS credentials here.
+      # The test file contains skip logic so that missing AWS creds
+      # causes a graceful SKIP instead of failure.
+
+      - name: Run Terratests
+        run: |
+          go test ./test -v
