@@ -1,0 +1,1 @@
+{"filename": "builds/d7a91117f6be68e66172be74d8d8cb8087b14d593b4f44ece78b3b347df1a4e2.zip", "runtime": "python3.12", "artifacts_dir": "builds", "build_plan": [[["set:workdir", "lambda-functions/metadata_generator"], ["sh", "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt"], ["zip:embedded"]]]}

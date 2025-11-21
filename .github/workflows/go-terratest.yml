@@ -1,0 +1,39 @@
+name: Terratest (Plan Only, No AWS Credentials)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  terratest:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read    # no AWS permissions at all
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.5"
+
+      # --- IMPORTANT ---
+      # Terratest will call Terraform inside ./test/terraform_root_module_test.go.
+      # We do NOT provide AWS credentials here.
+      # The test file contains skip logic so that missing AWS creds
+      # causes a graceful SKIP instead of failure.
+
+      - name: Run Terratests
+        run: |
+          go test ./test -v
