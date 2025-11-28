@@ -12,7 +12,6 @@ resource "aws_dms_endpoint" "source" {
   port          = local.database_credentials["port"]
 
   extra_connection_attributes = var.dms_source.extra_connection_attributes
-  kms_key_arn = aws_kms_key.dms_source_cmk.arn
 
   tags = merge(
     { Name = "${var.db}-source" },
@@ -40,7 +39,6 @@ resource "aws_dms_s3_endpoint" "s3_target" {
   parquet_timestamp_in_millisecond = true
   parquet_version                  = "parquet-2-0"
   timestamp_column_name            = var.s3_target_config.timestamp_column_name
-  kms_key_arn                      = aws_kms_key.dms_source_cmk.arn
 
   tags = merge(
     { Name = "${var.db}-target" },
