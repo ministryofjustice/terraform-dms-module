@@ -60,6 +60,6 @@ module "test_dms_implementation" {
 
   tags = local.tags
 
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_arn      = "arn:aws:glue:eu-west-1:12345678:catalog"
   glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }

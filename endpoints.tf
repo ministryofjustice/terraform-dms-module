@@ -22,6 +22,7 @@ resource "aws_dms_endpoint" "source" {
 # DMS S3 Target Endpoint
 resource "aws_dms_s3_endpoint" "s3_target" {
   # checkov:skip=CKV_AWS_298: Use AWS managed KMS key
+
   endpoint_id                      = "${var.db}-target"
   endpoint_type                    = "target"
   bucket_name                      = aws_s3_bucket.landing.bucket
