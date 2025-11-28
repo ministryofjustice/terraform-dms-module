@@ -1,0 +1,2 @@
+skip-check:
+  - CKV_AWS_296 # KMS brough in via module variable
