@@ -12,6 +12,7 @@ resource "aws_dms_endpoint" "source" {
   port          = local.database_credentials["port"]
 
   extra_connection_attributes = var.dms_source.extra_connection_attributes
+  kms_key_arn = aws_kms_key.dms_source_cmk.arn
 
   tags = merge(
     { Name = "${var.db}-source" },
@@ -22,6 +23,7 @@ resource "aws_dms_endpoint" "source" {
 # DMS S3 Target Endpoint
 resource "aws_dms_s3_endpoint" "s3_target" {
   # checkov:skip=CKV_AWS_298: Use AWS managed KMS key
+
   endpoint_id                      = "${var.db}-target"
   endpoint_type                    = "target"
   bucket_name                      = aws_s3_bucket.landing.bucket
@@ -38,6 +40,7 @@ resource "aws_dms_s3_endpoint" "s3_target" {
   parquet_timestamp_in_millisecond = true
   parquet_version                  = "parquet-2-0"
   timestamp_column_name            = var.s3_target_config.timestamp_column_name
+  kms_key_arn                      = aws_kms_key.dms_source_cmk.arn
 
   tags = merge(
     { Name = "${var.db}-target" },
