@@ -88,7 +88,7 @@ module "test_dms_implementation" {
 
   tags = local.tags
 
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_arn      = "arn:aws:glue:eu-west-1:12345678:catalog"
   glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }
 ```
@@ -177,7 +177,6 @@ This will be used to select the tables to be migrated.
 | [aws_iam_role_policy.eventbridge_sns_publish](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.dms-cloudwatch-logs-role-AmazonDMSCloudWatchLogsRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.dms-vpc-role-AmazonDMSVPCManagementRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_kms_key.dms_source_cmk](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_lambda_permission.allow_landing_bucket_to_invoke_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
 | [aws_s3_bucket.invalid](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
