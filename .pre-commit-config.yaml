@@ -2,7 +2,7 @@ default_stages: [pre-commit]
 exclude: '^README.md'
 repos:
 - repo: http://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.73.0
+  rev: v1.104.0
   hooks:
   - id: terraform_fmt
   - id: terraform_validate
@@ -17,10 +17,9 @@ repos:
   - id: check-yaml
   - id: end-of-file-fixer
   - id: trailing-whitespace
-  - id: whitespace-fixer
   - id: check-added-large-files
-  - id: detect-private-keys
-  - id: check-merge-conflicts
+  - id: detect-private-key
+  - id: check-merge-conflict
   - id: check-json
   - id: check-toml
   - id: no-commit-to-branch
@@ -30,4 +29,4 @@ repos:
   rev: v0.5.6
   hooks:
   - id: ruff
-  - id: ruff-fix
+  - id: ruff-format
