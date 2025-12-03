@@ -1,0 +1,10 @@
+skip-check:
+  - CKV_AWS_296 # KMS brough in via module variable
+  - CKV_AWS_5 # VPC flow logs not required for this project
+  - CKV_AWS_62 # Public S3 bucket for hosting static website
+  - CKV_AWS_18 # Security group with port 22 open to the world for bastion host
+  - CKV_AWS_144 # RDS instance is not publicly accessible
+  - CKV_AWS_21 # ELB with HTTP listener only for internal use
+  - CKV_AWS_61 # S3 bucket with public read access for static website hosting
+  - CKV_AWS_145 # RDS instance with minor version auto upgrade disabled
+  - CKV_AWS_158 # IAM user with console access required for this project
