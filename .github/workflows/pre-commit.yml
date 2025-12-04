@@ -10,60 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # --------------------------------------
-      # Checkout code
-      # --------------------------------------
       - uses: actions/checkout@v4
 
-      # --------------------------------------
-      # Python (required for pre-commit + checkov)
-      # --------------------------------------
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # --------------------------------------
-      # Install Terraform (needed by fmt + validate hooks)
-      # --------------------------------------
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
 
-      # --------------------------------------
-      # Install tflint (needed by terraform_tflint hook)
-      # --------------------------------------
       - name: Install tflint
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: latest
 
-      # --------------------------------------
-      # Install Trivy CLI (needed by terraform_trivy hook)
-      # --------------------------------------
-      - name: Install Trivy
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y wget
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.57.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.57.1_Linux-64bit.deb
-      # (Swap version above if you want a specific one.)
+      # Install Trivy CLI for use by pre-commit hooks
+      - name: Install trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          install-only: true
 
-      # --------------------------------------
-      # Install Checkov (needed by terraform_checkov hook)
-      # --------------------------------------
-      - name: Install Checkov
-        run: pip install checkov
+      - name: Install checkov
+        run: pip install --upgrade pip checkov
 
-      # --------------------------------------
-      # Install pre-commit
-      # --------------------------------------
       - name: Install pre-commit
         run: pip install pre-commit
 
-      # --------------------------------------
-      # Cache pre-commit environments
-      # --------------------------------------
       - name: Cache pre-commit
         uses: actions/cache@v4
         with:
@@ -72,8 +48,5 @@ jobs:
           restore-keys: |
             pre-commit-
 
-      # --------------------------------------
-      # Run all hooks
-      # --------------------------------------
       - name: Run pre-commit
         run: pre-commit run --all-files
