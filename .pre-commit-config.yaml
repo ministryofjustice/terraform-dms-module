@@ -8,9 +8,8 @@ repos:
   - id: terraform_validate
   - id: terraform_tflint
   - id: terraform_trivy
-    args: ['--severity', 'HIGH,CRITICAL']
   - id: terraform_checkov
-    args: ['--config-file', '.checkov.yaml']
+    args: ['--skip-check', 'CKV_AWS_296']
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
   hooks:

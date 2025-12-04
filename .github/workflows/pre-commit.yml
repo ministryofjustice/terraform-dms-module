@@ -10,24 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Install tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Install trivy
+        uses: aquasecurity/trivy-action@0.24.0
+
+      - name: Install checkov
+        run: pip install checkov
 
       - name: Install pre-commit
         run: pip install pre-commit
 
-      # Optional: cache pre-commit envs to speed up
       - name: Cache pre-commit
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/pre-commit
+          path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-
 
       - name: Run pre-commit
         run: pre-commit run --all-files
