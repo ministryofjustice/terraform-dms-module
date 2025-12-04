@@ -5,6 +5,8 @@ repos:
   rev: v1.104.0
   hooks:
   - id: terraform_fmt
+  - id: terraform_validate
+    exclude: "^examples/"
   - id: terraform_tflint
   - id: terraform_trivy
     args:
@@ -12,9 +14,9 @@ repos:
       - --args=--skip-dirs=**examples
       - --args=--severity=HIGH,CRITICAL
   - id: terraform_checkov
+    pass_filenames: false
     args:
       - --args=--config-file .checkov.yml
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
   hooks:
@@ -25,7 +27,7 @@ repos:
   - id: detect-private-key
   - id: check-merge-conflict
   - id: check-json
-  - id: check-toml
+  - id:  check-toml
   - id: no-commit-to-branch
     args: ['--branch', 'main', '--branch', 'master']
   - id: pretty-format-json

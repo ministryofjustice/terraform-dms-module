@@ -1,4 +1,4 @@
-name: pre-commit-like CI/CD
+name: pre-commit-like ci/cd
 
 on:
   pull_request:

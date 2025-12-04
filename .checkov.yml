@@ -1,3 +1,4 @@
+quiet: true
 skip-check:
   - CKV2_AWS_5 # Ensure no security groups allow ingress from
   - CKV2_AWS_61 # Ensure RDS instances are not publicly accessible
