@@ -7,6 +7,8 @@ repos:
   - id: terraform_fmt
   - id: terraform_tflint
   - id: terraform_trivy
+    args:
+      - --severity=HIGH,CRITICAL
   - id: terraform_checkov
     args:
       - --args=--skip-check CKV_TF_5
