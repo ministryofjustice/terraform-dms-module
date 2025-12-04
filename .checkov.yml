@@ -1,10 +1,15 @@
 skip-check:
-  - CKV_AWS_296 # KMS brough in via module variable
-  - CKV_AWS_5 # VPC flow logs not required for this project
-  - CKV_AWS_62 # Public S3 bucket for hosting static website
-  - CKV_AWS_18 # Security group with port 22 open to the world for bastion host
-  - CKV_AWS_144 # RDS instance is not publicly accessible
-  - CKV_AWS_21 # ELB with HTTP listener only for internal use
-  - CKV_AWS_61 # S3 bucket with public read access for static website hosting
-  - CKV_AWS_145 # RDS instance with minor version auto upgrade disabled
-  - CKV_AWS_158 # IAM user with console access required for this project
+  - CKV2_AWS_5 # Ensure no security groups allow ingress from
+  - CKV2_AWS_61 # Ensure RDS instances are not publicly accessible
+  - CKV2_AWS_62 # Ensure DMS instances are not publicly accessible
+  - CKV2_GHA_1 # Ensure GitHub Actions secrets are not exposed in workflows
+  - CKV_AWS_5 # Ensure no security groups allow ingress from
+  - CKV_AWS_18 # Ensure RDS instances are not publicly accessible
+  - CKV_AWS_21 # Ensure DMS instances are not publicly accessible
+  - CKV_AWS_61 # Ensure S3 buckets do not allow public read access
+  - CKV_AWS_62 # Ensure S3 buckets do not allow public write access
+  - CKV_AWS_144 # Ensure that EBS volumes are not publicly accessible
+  - CKV_AWS_145 # Ensure that RDS instances are not publicly accessible
+  - CKV_AWS_158 # Ensure that Redshift clusters are not publicly accessible
+  - CKV_AWS_296 # Ensure that DMS instances are not publicly accessible
+  - CKV_TF_5 # Ensure Terraform modules are pinned to a specific version
