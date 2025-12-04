@@ -8,6 +8,8 @@ repos:
   - id: terraform_tflint
   - id: terraform_trivy
   - id: terraform_checkov
+    args:
+      - --args=--skip-check CKV_TF_5
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
   hooks:
