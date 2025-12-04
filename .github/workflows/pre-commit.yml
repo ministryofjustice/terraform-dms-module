@@ -27,7 +27,7 @@ jobs:
           tflint_version: latest
 
       - name: Install trivy
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.2.4
 
       - name: Install checkov
         run: pip install checkov

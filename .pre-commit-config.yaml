@@ -7,6 +7,7 @@ repos:
   - id: terraform_fmt
   - id: terraform_validate
   - id: terraform_tflint
+  - id: terraform_trivy
   - id: terraform_checkov
     args: ['--skip-check', 'CKV_AWS_296']
 - repo: https://github.com/pre-commit/pre-commit-hooks
