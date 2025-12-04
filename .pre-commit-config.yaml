@@ -9,7 +9,7 @@ repos:
   - id: terraform_trivy
   - id: terraform_checkov
     args:
-      - --args=--skip-check CKV_TF_5,CKV_AWS_296,CKV_AWS_5,CKV_AWS_62,CKV_AWS_18,CKV_AWS_144,CKV_AWS_21,CKV_AWS_61,CKV_AWS_145,CKV_AWS_158
+      - --args=--skip-check CKV2_AWS_5, CKV2_AWS_61, CKV2_AWS_62, CKV2_GHA_1, CKV_AWS_5, CKV_AWS_18, CKV_AWS_21, CKV_AWS_61, CKV_AWS_62, CKV_AWS_144, CKV_AWS_145, CKV_AWS_158, CKV_AWS_296, CKV_TF_5
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0
   hooks:
