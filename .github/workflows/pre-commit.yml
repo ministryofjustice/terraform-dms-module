@@ -61,5 +61,5 @@ jobs:
             pre-commit-
 
       - name: Run pre-commit
-        # USE THIS FOR PRODUCTION, ITS QUICKER: run: pre-commit run --show-diff-on-failure
-        run: pre-commit run --all-files
+        run: pre-commit run --show-diff-on-failure
+        #run: pre-commit run --all-files
