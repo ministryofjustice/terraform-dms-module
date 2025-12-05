@@ -26,12 +26,10 @@ jobs:
         with:
           tflint_version: latest
 
-      # Install Trivy CLI for use by pre-commit hooks
-      - name: Install trivy
-        uses: aquasecurity/trivy-action@0.28.0
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@v1
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
+          version: 0.68.1
           install-only: true
 
       - name: Install checkov

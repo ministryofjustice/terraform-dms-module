@@ -1,38 +1,63 @@
 default_stages: [pre-commit]
 exclude: '^README.md'
+
 repos:
-- repo: http://github.com/antonbabenko/pre-commit-terraform
-  rev: v1.104.0
-  hooks:
-  - id: terraform_fmt
-  - id: terraform_validate
-    exclude: "^examples/"
-  - id: terraform_tflint
-  - id: terraform_trivy
-    args:
-      - --args=--skip-dirs=**.terraform
-      - --args=--skip-dirs=**examples
-      - --args=--severity=HIGH,CRITICAL
-  - id: terraform_checkov
-    pass_filenames: false
-    args:
-      - --args=--config-file .checkov.yml
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
-  hooks:
-  - id: check-yaml
-  - id: end-of-file-fixer
-  - id: trailing-whitespace
-  - id: check-added-large-files
-  - id: detect-private-key
-  - id: check-merge-conflict
-  - id: check-json
-  - id:  check-toml
-  - id: no-commit-to-branch
-    args: ['--branch', 'main', '--branch', 'master']
-  - id: pretty-format-json
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.5.6
-  hooks:
-  - id: ruff
-  - id: ruff-format
+  # Terraform hooks
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.104.0
+    hooks:
+      # Format Terraform files
+      - id: terraform_fmt
+
+      # Validate Terraform configuration
+      - id: terraform_validate
+        exclude: "^examples/"
+
+      # Run TFLint using system-installed TFLint
+      - id: terraform_tflint
+        # System hook: TFLint must be installed on the PATH
+        args:
+          - --args=--init
+
+      # Run Trivy using system-installed Trivy
+      - id: terraform_trivy
+        # System hook: Trivy must be installed on the PATH
+        args:
+          - --args=--skip-dirs=**.terraform
+          - --args=--skip-dirs=**examples
+          - --args=--severity=HIGH,CRITICAL
+
+      # Run Checkov for misconfigurations
+      - id: terraform_checkov
+        pass_filenames: false
+        args:
+          - --args=--config-file .checkov.yml
+
+  # General-purpose pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: detect-private-key
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master']
+      - id: pretty-format-json
+
+  # Python linter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.6
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+  # Python code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.0  # pinned version for reproducibility
+    hooks:
+      - id: black
