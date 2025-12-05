@@ -21,6 +21,10 @@ jobs:
         with:
           terraform_version: 1.9.8
 
+      # Pull modules and such, so pre-commit does not fail
+      - name: Terraform init
+        run: terraform init -input=false
+
       - name: Install tflint
         uses: terraform-linters/setup-tflint@v4
         with:
@@ -57,4 +61,5 @@ jobs:
             pre-commit-
 
       - name: Run pre-commit
+        # USE THIS FOR PRODUCTION, ITS QUICKER: run: pre-commit run --show-diff-on-failure
         run: pre-commit run --all-files
