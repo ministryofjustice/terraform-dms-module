@@ -26,6 +26,12 @@ jobs:
         with:
           tflint_version: latest
 
+      - name: Manual Trivy Setup
+        uses: aquasecurity/setup-trivy@v0.2.0
+        with:
+          cache: true
+          version: v0.65.0
+
       - name: Install Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
