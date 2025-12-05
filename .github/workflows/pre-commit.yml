@@ -40,6 +40,7 @@ jobs:
           severity: HIGH,CRITICAL
           skip-dirs: .terraform,examples
           install-only: true
+          skip-setup-trivy: true
 
       - name: Install checkov
         run: pip install --upgrade pip checkov
