@@ -1,5 +1,5 @@
 quiet: true
-soft-fail:
+skip-check:
   - CKV2_AWS_5   # Ensure that security groups are attached to resources (not left unattached)
   - CKV2_AWS_57  # Ensure Secrets Manager secrets should have automatic rotation enabled
   - CKV2_AWS_61  # Ensure that an S3 bucket has a lifecycle configuration
