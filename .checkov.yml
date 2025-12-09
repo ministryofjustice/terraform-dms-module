@@ -1,5 +1,5 @@
 quiet: true
-soft_fail: true
+soft-fail: true
 
 # skip-check:
   # - CKV2_AWS_5   # Ensure that security groups are attached to resources (not left unattached)
