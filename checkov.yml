@@ -1,2 +1,0 @@
-skip-check:
-  - CKV_AWS_296 # KMS brought in via module variable
