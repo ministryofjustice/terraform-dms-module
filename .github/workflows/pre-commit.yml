@@ -1,9 +1,7 @@
-name: pre-commit-like ci/cd
+name: pre-commit-like-ci-cd
 
 on:
   pull_request:
-  push:
-    branches: [ main ]
 
 jobs:
   pre-commit:
