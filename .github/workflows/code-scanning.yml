@@ -1,9 +1,6 @@
 name: Secure Code Analysis
 on:
-  workflow_run:
-    workflows: ["pre-commit-like-ci-cd"]
-    types:
-      - completed
+  workflow_dispatch:
   schedule:
     - cron: '35 1 * * *'
 env:
