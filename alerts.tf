@@ -66,7 +66,7 @@ resource "aws_cloudwatch_event_rule" "dms_events_by_category" {
   description = "Triggers on DMS replication task state changes for listed categories"
 
   event_pattern = jsonencode({
-    source          = ["aws.dms"],
+    source           = ["aws.dms"],
     "detail-type" = ["DMS Replication Task State Change"],
     resources     = local.source_ids,
     detail = {
