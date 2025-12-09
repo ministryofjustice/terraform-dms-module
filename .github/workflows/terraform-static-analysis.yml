@@ -1,7 +1,7 @@
 name: Terraform Static Code Analysis
 
 on:
-  workflow_dispatch:
+  workflow_run:
     workflows: ["pre-commit-like-ci-cd"]
     types:
       - completed
