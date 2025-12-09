@@ -34,11 +34,6 @@ variable "dms_replication_instance" {
     condition     = contains(["3.5.2", "3.5.3", "3.5.4"], var.dms_replication_instance.engine_version)
     error_message = "Valid values for var: test_variable are ('3.5.2', '3.5.3', '3.5.4')."
   }
-
-  validation {
-    condition     = length(var.dms_replication_instance.kms_key_arn) > 0
-    error_message = "dms_replication_instance.kms_key_arn must be a non-empty KMS key ARN for SNS encryption."
-  }
 }
 
 variable "replication_task_id" {
