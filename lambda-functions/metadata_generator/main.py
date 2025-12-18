@@ -28,10 +28,13 @@ dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
 lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
 metadata_bucket = os.getenv("METADATA_BUCKET")
 db_secret_arn = os.getenv("DB_SECRET_ARN")
-retry_failed_after_recreate_metadata = os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
+retry_failed_after_recreate_metadata = (
+    os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
+)
 use_glue_catalog = os.getenv("USE_GLUE_CATALOG", "true").lower() == "true"
 glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
-os.environ['AWS_STS_REGIONAL_ENDPOINTS'] = 'regional'
+os.environ["AWS_STS_REGIONAL_ENDPOINTS"] = "regional"
+
 
 def _get_glue_client():
     """
@@ -40,22 +43,21 @@ def _get_glue_client():
     glue_client_kwargs = {}
     glue_role_arn = os.getenv("GLUE_CATALOG_ROLE_ARN")
     if glue_role_arn:
-        sts_connection = boto3.client('sts')
+        sts_connection = boto3.client("sts")
         acct_b = sts_connection.assume_role(
-            RoleArn=glue_role_arn,
-            RoleSessionName="cross_acct_lambda"
+            RoleArn=glue_role_arn, RoleSessionName="cross_acct_lambda"
         )
-        glue_client_kwargs.update({
-            'aws_access_key_id': acct_b['Credentials']['AccessKeyId'],
-            'aws_secret_access_key': acct_b['Credentials']['SecretAccessKey'],
-            'aws_session_token': acct_b['Credentials']['SessionToken'],
-        })
+        glue_client_kwargs.update(
+            {
+                "aws_access_key_id": acct_b["Credentials"]["AccessKeyId"],
+                "aws_secret_access_key": acct_b["Credentials"]["SecretAccessKey"],
+                "aws_session_token": acct_b["Credentials"]["SessionToken"],
+            }
+        )
     else:
         logger.info(f"Not assuming role, as GLUE_CATALOG_ROLE_ARN={glue_role_arn}")
-    return boto3.client(
-        'glue',
-        **glue_client_kwargs
-    )
+    return boto3.client("glue", **glue_client_kwargs)
+
 
 logger = logging.getLogger()
 log_level = os.getenv("LOG_LEVEL", "INFO")
@@ -141,13 +143,16 @@ class MetadataExtractor:
         if dms_mapping_rules_bucket:
             logger.info("Loading columns to exclude from %s", path_to_dms_mapping_rules)
             response = s3.get_object(
-                Bucket=dms_mapping_rules_bucket,
-                Key=dms_mapping_rules_key
+                Bucket=dms_mapping_rules_bucket, Key=dms_mapping_rules_key
             )
-            self.dms_mapping_rules = json.loads(b"".join(response['Body'].readlines()).decode("utf-8"))
+            self.dms_mapping_rules = json.loads(
+                b"".join(response["Body"].readlines()).decode("utf-8")
+            )
         self.excluded_columns_by_object = defaultdict(set)
         for object_column in self.dms_mapping_rules.get("columns_to_exclude", []):
-            self.excluded_columns_by_object[object_column["object_name"].upper()].add(object_column["column_name"].upper())
+            self.excluded_columns_by_object[object_column["object_name"].upper()].add(
+                object_column["column_name"].upper()
+            )
 
         logger.info("Excluded columns loaded as %s", self.excluded_columns_by_object)
         self.emc = EtlManagerConverter()
@@ -199,7 +204,9 @@ class MetadataExtractor:
             metadata.update_column(column)
         return metadata
 
-    def _process_exclusions(self, metadata: Metadata, schema: str, table: str) -> Metadata:
+    def _process_exclusions(
+        self, metadata: Metadata, schema: str, table: str
+    ) -> Metadata:
         """
         Remove relevant entries from column exclusion list from metadata
 
@@ -212,7 +219,9 @@ class MetadataExtractor:
         :rtype: Metadata
         """
         exclusion_key = ""
-        logger.info("Looking for excluded columns for keys %s.%s and %s", schema, table, table)
+        logger.info(
+            "Looking for excluded columns for keys %s.%s and %s", schema, table, table
+        )
         if f"{schema}.{table}".upper() in self.excluded_columns_by_object:
             exclusion_key = f"{schema}.{table}".upper()
         elif table.upper() in self.excluded_columns_by_object:
@@ -220,11 +229,23 @@ class MetadataExtractor:
         else:
             return metadata
 
-        for column_name in set(metadata.column_names).intersection(map(str.lower, self.excluded_columns_by_object[exclusion_key])):
-            logger.info("Removing column %s from table %s in schema %s in metadata", column_name, table, schema)
+        for column_name in set(metadata.column_names).intersection(
+            map(str.lower, self.excluded_columns_by_object[exclusion_key])
+        ):
+            logger.info(
+                "Removing column %s from table %s in schema %s in metadata",
+                column_name,
+                table,
+                schema,
+            )
             metadata.remove_column(column_name)
             if column_name in metadata._data["primary_key"]:
-                logger.info("Unsetting primary key of %s on %s.%s so as not to break metadata.validate()", column_name, schema, table)
+                logger.info(
+                    "Unsetting primary key of %s on %s.%s so as not to break metadata.validate()",
+                    column_name,
+                    schema,
+                    table,
+                )
                 metadata._data["primary_key"].remove(column_name)
 
         return metadata
@@ -263,7 +284,7 @@ class MetadataExtractor:
             "objects": sorted(self.objects),
             "blobs": self.blobs,
             "deleted_tables": sorted(self.deleted_tables),
-            "dms_mapping_rules": self.dms_mapping_rules
+            "dms_mapping_rules": self.dms_mapping_rules,
         }
         s3.put_object(
             Body=json.dumps(database_objects),
@@ -271,7 +292,7 @@ class MetadataExtractor:
             Key="objects.json",
         )
 
-    def get_schema_and_table_from_object(self, obj_str: str) -> 'tuple[str, str]':
+    def get_schema_and_table_from_object(self, obj_str: str) -> "tuple[str, str]":
         """get_table_specific_schema.
 
         :param object: database object string in format `table` or `schema.table`
@@ -286,10 +307,15 @@ class MetadataExtractor:
         elif len(object_list) == 1:
             return self.schema_name, object_list[0]
         else:
-            raise ValueError(f"Expected object to be of format `table` or `schema.table` but got {obj_str}")
+            raise ValueError(
+                f"Expected object to be of format `table` or `schema.table` but got {obj_str}"
+            )
 
     def get_database_metadata(self, output_bucket):
-        tables = [self.get_table_metadata (*self.get_schema_and_table_from_object(obj)) for obj in self.objects]
+        tables = [
+            self.get_table_metadata(*self.get_schema_and_table_from_object(obj))
+            for obj in self.objects
+        ]
         self._write_database_objects(output_bucket)
         return tables
 
@@ -305,7 +331,6 @@ def handler(event, context):  # pylint: disable=unused-argument
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
 
-
     # TODO: Works for oracle databases. Need to add support for other databases
     port = "1521"
     dsn = f"{host}:{port}/?service_name={db_name}"
@@ -318,14 +343,12 @@ def handler(event, context):  # pylint: disable=unused-argument
             "program": "repctl",
             # this becomes USERENV('OS_USER')
             "osuser": "rdsdb",
-        }
+        },
     )
-    response = s3.get_object(
-        Bucket=dms_mapping_rules_bucket,
-        Key=dms_mapping_rules_key
+    response = s3.get_object(Bucket=dms_mapping_rules_bucket, Key=dms_mapping_rules_key)
+    dms_mapping_rules = json.loads(
+        b"".join(response["Body"].readlines()).decode("utf-8")
     )
-    dms_mapping_rules = json.loads(b"".join(response['Body'].readlines()).decode("utf-8"))
-
 
     # REMOVE: Change how this gets populated
     # db_objects = [obj.lower() for obj in json.loads(os.getenv("DB_OBJECTS", "[]"))]
@@ -341,7 +364,7 @@ def handler(event, context):  # pylint: disable=unused-argument
         "objects": db_objects,
         "include_derived_columns": True,
         "dialect": engine,
-        "path_to_dms_mapping_rules": dms_mapping_rules_key
+        "path_to_dms_mapping_rules": dms_mapping_rules_key,
     }
 
     if use_glue_catalog:
@@ -349,7 +372,9 @@ def handler(event, context):  # pylint: disable=unused-argument
         glue_kwargs = {}
         if glue_catalog_arn:
             # Get account name from glue catalog arn to use as catalogId
-            catalogId = re.match(r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn).groups()
+            catalogId = re.match(
+                r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn
+            ).groups()
             assert len(catalogId) == 1
             glue_kwargs["CatalogId"] = catalogId[0]
         try:
@@ -357,16 +382,20 @@ def handler(event, context):  # pylint: disable=unused-argument
             logger.info(f"Database {db_identifier} already exists in Glue Catalog")
         except glue.exceptions.EntityNotFoundException:
             # Create the database if it does not exist. Fails is it cannot be created
-            logger.info(f"Database {db_identifier} does not exist in Glue Catalog. Creating it now")
+            logger.info(
+                f"Database {db_identifier} does not exist in Glue Catalog. Creating it now"
+            )
             response = glue.create_database(
                 DatabaseInput={
                     "Name": db_identifier,
                     "Description": f"{db_identifier} - DMS Pipeline",
                 },
-                **glue_kwargs
+                **glue_kwargs,
             )
     else:
-        logger.info(f"Not contacting glue catalog, as db_identifier defined as {db_identifier}")
+        logger.info(
+            f"Not contacting glue catalog, as db_identifier defined as {db_identifier}"
+        )
 
     metadata = MetadataExtractor(db_options, engine)
     db_metadata = metadata.get_database_metadata(metadata_bucket)
@@ -387,23 +416,30 @@ def handler(event, context):  # pylint: disable=unused-argument
             primary_key_raw = table["TableInput"]["Parameters"].get("primary_key", "")
             if not primary_key_raw:
                 primary_key_list = ""
-            else:    
+            else:
                 primary_key_list = ",".join(ast.literal_eval(primary_key_raw))
             table["TableInput"]["Parameters"].update(
                 {
-                 "source_primary_key": primary_key_list,
-                 "extraction_key": "extraction_timestamp, scn",
-                 "extraction_timestamp_column_name": "extraction_timestamp",
-                 "extraction_operation_column_name": "op"}
+                    "source_primary_key": primary_key_list,
+                    "extraction_key": "extraction_timestamp, scn",
+                    "extraction_timestamp_column_name": "extraction_timestamp",
+                    "extraction_operation_column_name": "op",
+                }
             )
             table["TableInput"]["Parameters"].pop("primary_key", None)
             try:
-                glue.get_table(DatabaseName=db_identifier, Name=table["TableInput"]["Name"], **glue_kwargs)
+                glue.get_table(
+                    DatabaseName=db_identifier,
+                    Name=table["TableInput"]["Name"],
+                    **glue_kwargs,
+                )
                 logger.info(f"Table {table['TableInput']['Name']} already exists")
                 # Update the table if it exists
                 logger.info(f"Updating table {table['TableInput']['Name']}")
                 glue.update_table(
-                    DatabaseName=db_identifier, TableInput=table["TableInput"], **glue_kwargs
+                    DatabaseName=db_identifier,
+                    TableInput=table["TableInput"],
+                    **glue_kwargs,
                 )
             except glue.exceptions.EntityNotFoundException:
                 try:
@@ -416,7 +452,9 @@ def handler(event, context):  # pylint: disable=unused-argument
                     logger.exception("Create table failed: %s", table)
                     raise e
     else:
-        logger.info(f"Not contacting glue catalog, as use_glue_catalog is {use_glue_catalog}")
+        logger.info(
+            f"Not contacting glue catalog, as use_glue_catalog is {use_glue_catalog}"
+        )
 
     # Output json metadata to S3
     for table in db_metadata:
