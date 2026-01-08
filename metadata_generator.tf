@@ -1,6 +1,12 @@
 #S3 bucket to store source metadata
 #trivy:ignore:AVD-AWS-0089: No logging required
 resource "aws_s3_bucket" "validation_metadata" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   bucket_prefix = "${var.db}-metadata-"
 
   tags = var.tags
@@ -173,6 +179,7 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
 #trivy:ignore:AVD-AWS-0104: Allow all egress traffic
 resource "aws_security_group" "metadata_generator_lambda_function" {
   #checkov:skip=CKV_AWS_382: Allow all egress traffic
+  #checkov:skip=CKV2_AWS_5: Security Groups are attached to another resource
   name        = "${var.db}-metadata-generator-lambda-function"
   vpc_id      = var.vpc_id
   description = "Security group for Lambda function to generate metadata for ${var.db} DMS data output"

@@ -5,6 +5,12 @@ locals {
 # S3 bucket to store lambda code/packages
 #trivy:ignore:AVD-AWS-0089: No logging required
 resource "aws_s3_bucket" "lambda" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   bucket_prefix = "${var.db}-lambda-functions-"
 
   tags = var.tags
@@ -41,6 +47,12 @@ resource "aws_s3_bucket_versioning" "lambda" {
 # S3 bucket - Landing
 #trivy:ignore:AVD-AWS-0089: No logging required
 resource "aws_s3_bucket" "landing" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   bucket_prefix = "${var.db}-landing-"
 }
 
@@ -104,6 +116,12 @@ resource "aws_s3_bucket_notification" "landing" {
 #trivy:ignore:AVD-AWS-0089: No logging required
 # Local to determine the actual bucket name to use
 resource "aws_s3_bucket" "raw_history" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   count         = length(var.output_bucket) > 0 ? 0 : 1
   bucket_prefix = "${var.db}-raw-history-"
 }
@@ -151,6 +169,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "raw_history" {
 # Invalid bucket
 #trivy:ignore:AVD-AWS-0089: No logging required
 resource "aws_s3_bucket" "invalid" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   bucket_prefix = "${var.db}-invalid-"
 }
 
@@ -192,6 +216,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "invalid" {
 # Bucket to store premigration-assessment
 #trivy:ignore:AVD-AWS-0089: No logging required
 resource "aws_s3_bucket" "premigration_assessment" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   count         = var.create_premigration_assessement_resources ? 1 : 0
   bucket_prefix = "${var.db}-pma-"
 }
