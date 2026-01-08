@@ -3,7 +3,7 @@ locals {
 }
 
 # S3 bucket to store lambda code/packages
-#trivy:ignore:AVD-AWS-0089: No logging required
+#trivy:ignore:AVD-AWS-0089 No logging required
 resource "aws_s3_bucket" "lambda" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument

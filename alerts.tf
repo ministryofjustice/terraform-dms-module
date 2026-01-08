@@ -177,6 +177,7 @@ TEMPLATE
 }
 
 # ------------------ EventBridge CloudWatch Logs ------------------
+#trivy:ignore:AVD-AWS-0017 CMK not used here
 resource "aws_cloudwatch_log_group" "eventbridge" {
   #checkov:skip=CKV_AWS_158: kms not used here
   name = "${var.db}-events-logs"
