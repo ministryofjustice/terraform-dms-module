@@ -115,9 +115,9 @@ resource "aws_s3_bucket_notification" "landing" {
 # Bucket to store validated data
 # This can be passed in from outside the module
 # but in that case it is assumed all related aws_s3_bucket_* resources are being managed externally
+# Local to determine the actual bucket name to use
 #trivy:ignore:AVD-AWS-0089 No logging required
 #trivy:ignore:s3-bucket-logging No logging required
-# Local to determine the actual bucket name to use
 resource "aws_s3_bucket" "raw_history" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
