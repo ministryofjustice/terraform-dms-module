@@ -4,6 +4,7 @@ locals {
 
 # S3 bucket to store lambda code/packages
 #trivy:ignore:AVD-AWS-0089 No logging required
+#trivy:ignore:s3-bucket-logging No logging required
 resource "aws_s3_bucket" "lambda" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
@@ -46,6 +47,7 @@ resource "aws_s3_bucket_versioning" "lambda" {
 
 # S3 bucket - Landing
 #trivy:ignore:AVD-AWS-0089 No logging required
+#trivy:ignore:s3-bucket-logging No logging required
 resource "aws_s3_bucket" "landing" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
@@ -114,6 +116,7 @@ resource "aws_s3_bucket_notification" "landing" {
 # This can be passed in from outside the module
 # but in that case it is assumed all related aws_s3_bucket_* resources are being managed externally
 #trivy:ignore:AVD-AWS-0089 No logging required
+#trivy:ignore:s3-bucket-logging No logging required
 # Local to determine the actual bucket name to use
 resource "aws_s3_bucket" "raw_history" {
   #checkov:skip=CKV2_AWS_62: no notification argument
@@ -168,6 +171,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "raw_history" {
 
 # Invalid bucket
 #trivy:ignore:AVD-AWS-0089 No logging required
+#trivy:ignore:s3-bucket-logging No logging required
 resource "aws_s3_bucket" "invalid" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
@@ -215,6 +219,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "invalid" {
 
 # Bucket to store premigration-assessment
 #trivy:ignore:AVD-AWS-0089 No logging required
+#trivy:ignore:s3-bucket-logging No logging required
 resource "aws_s3_bucket" "premigration_assessment" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
