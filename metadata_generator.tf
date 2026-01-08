@@ -1,5 +1,5 @@
 #S3 bucket to store source metadata
-#trivy:ignore:AVD-AWS-0089: No logging required
+#trivy:ignore:AVD-AWS-0089 No logging required
 resource "aws_s3_bucket" "validation_metadata" {
   #checkov:skip=CKV2_AWS_62: no notification argument
   #checkov:skip=CKV_AWS_18: no event notification argument
@@ -28,7 +28,7 @@ resource "aws_s3_bucket_public_access_block" "validation_metadata" {
   restrict_public_buckets = true
 }
 
-#trivy:ignore:AVD-AWS-0090: Versioning not needed
+#trivy:ignore:AVD-AWS-0090 Versioning not needed
 resource "aws_s3_bucket_versioning" "validation_metadata" {
   bucket = aws_s3_bucket.validation_metadata.id
   versioning_configuration {
@@ -36,7 +36,7 @@ resource "aws_s3_bucket_versioning" "validation_metadata" {
   }
 }
 
-#trivy:ignore:AVD-AWS-0132: Uses AES256 encryption
+#trivy:ignore:AVD-AWS-0132 Uses AES256 encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "validation_metadata" {
   bucket = aws_s3_bucket.validation_metadata.id
 
@@ -176,7 +176,7 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
 }
 
 # Create security group for Lambda function
-#trivy:ignore:AVD-AWS-0104: Allow all egress traffic
+#trivy:ignore:AVD-AWS-0104 Allow all egress traffic
 resource "aws_security_group" "metadata_generator_lambda_function" {
   #checkov:skip=CKV_AWS_382: Allow all egress traffic
   #checkov:skip=CKV2_AWS_5: Security Groups are attached to another resource
