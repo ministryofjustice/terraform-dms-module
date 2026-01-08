@@ -43,6 +43,7 @@ resource "aws_secretsmanager_secret" "dms_sandbox_secret" {
   kms_key_id = module.dms_test_kms.key_arn
 }
 
+#trivy:ignore:AVD-AWS-0066 X-Ray tracing not currently required. Logs sent to CloudWatch.
 module "test_dms_implementation" {
   # checkov:skip=CKV_TF_1: ignore check in example
   # checkov:skip=CKV_TF_2: ignore check in example
