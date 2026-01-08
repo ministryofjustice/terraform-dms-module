@@ -193,6 +193,7 @@ resource "aws_security_group" "metadata_generator_lambda_function" {
   }
 }
 
+#trivy:ignore:AVD-AWS-0066 X-Ray tracing not currently required. Logs sent to CloudWatch.
 module "metadata_generator" {
   # Commit hash for v7.20.1
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-lambda?ref=84dfbfddf9483bc56afa0aff516177c03652f0c7"
