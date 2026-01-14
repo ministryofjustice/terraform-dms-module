@@ -63,9 +63,15 @@ logger = logging.getLogger()
 log_level = os.getenv("LOG_LEVEL", "INFO")
 logger.setLevel(log_level)
 
-secretsmanager = boto3.client("secretsmanager")
-s3 = boto3.client("s3")
-glue = _get_glue_client()
+
+def _get_secretmanager():
+    return boto3.client("secretsmanager")
+
+
+def _get_s3():
+    return boto3.client("s3")
+
+
 oracledb.version = "8.3.0"
 sys.modules["cx_Oracle"] = oracledb
 load_dotenv()
@@ -142,6 +148,7 @@ class MetadataExtractor:
         path_to_dms_mapping_rules = db_options.get("path_to_dms_mapping_rules", "")
         if dms_mapping_rules_bucket:
             logger.info("Loading columns to exclude from %s", path_to_dms_mapping_rules)
+            s3 = _get_s3()
             response = s3.get_object(
                 Bucket=dms_mapping_rules_bucket, Key=dms_mapping_rules_key
             )
@@ -286,6 +293,7 @@ class MetadataExtractor:
             "deleted_tables": sorted(self.deleted_tables),
             "dms_mapping_rules": self.dms_mapping_rules,
         }
+        s3 = _get_s3()
         s3.put_object(
             Body=json.dumps(database_objects),
             Bucket=bucket,
@@ -321,6 +329,8 @@ class MetadataExtractor:
 
 
 def handler(event, context):  # pylint: disable=unused-argument
+    secretsmanager = _get_secretmanager()
+    glue = _get_glue_client()
     db_secret_response = secretsmanager.get_secret_value(SecretId=db_secret_arn)
     db_secret = json.loads(db_secret_response["SecretString"])
 
@@ -345,6 +355,7 @@ def handler(event, context):  # pylint: disable=unused-argument
             "osuser": "rdsdb",
         },
     )
+    s3 = _get_s3()
     response = s3.get_object(Bucket=dms_mapping_rules_bucket, Key=dms_mapping_rules_key)
     dms_mapping_rules = json.loads(
         b"".join(response["Body"].readlines()).decode("utf-8")
@@ -469,6 +480,7 @@ def handler(event, context):  # pylint: disable=unused-argument
 
 def reprocess_failed_records():
     logger.info("Reprocessing failed records")
+    s3 = _get_s3()
     list_invalid_bucket = s3.list_objects_v2(Bucket=invalid_bucket_name)
     logger.debug(f"Invalid bucket: {list_invalid_bucket}")
     if "Contents" not in list_invalid_bucket:
