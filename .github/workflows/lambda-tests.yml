@@ -1,0 +1,27 @@
+name: Run lambda tests
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lambda Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install .
+      - name: Run tests
+        run: |
+          if [ -d tests ]; then uv run -m pytest -vv tests; fi
