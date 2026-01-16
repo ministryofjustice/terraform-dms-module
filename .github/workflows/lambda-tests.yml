@@ -1,6 +1,5 @@
 name: Run lambda tests
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
@@ -15,7 +14,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: astal-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
