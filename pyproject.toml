@@ -5,8 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aws-xray-sdk>=2.15.0",
     "backports-tarfile>=1.2.0",
+    "dotenv>=0.9.9",
     "etl-manager>=9.0.1",
+    "mojap-metadata>=1.16.0",
     "moto>=5.1.19",
     "oracledb>=3.4.1",
+    "pyarrow>=22.0.0",
+    "pytest>=9.0.2",
+    "s3fs>=2026.1.0",
+    "sqlalchemy>=2.0.45",
 ]
