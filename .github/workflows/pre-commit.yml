@@ -1,10 +1,10 @@
-name: pre-commit-like-ci-cd
+name: prek-like-ci-cd
 
 on:
   pull_request:
 
 jobs:
-  pre-commit:
+  prek:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,17 +47,16 @@ jobs:
       - name: Install checkov
         run: pip install --upgrade pip checkov
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install prek
+        run: pip install prek
 
-      - name: Cache pre-commit
+      - name: Cache prek
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          path: ~/.cache/prek
+          key: prek-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
-            pre-commit-
+            prek-
 
-      - name: Run pre-commit
-        #run: pre-commit run --show-diff-on-failure
-        run: pre-commit run --all-files
+      - name: Run prek
+        run: prek run --all-files
