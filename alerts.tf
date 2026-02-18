@@ -143,7 +143,7 @@ resource "aws_cloudwatch_event_rule" "dms_instance_events" {
   event_pattern = jsonencode({
     source        = ["aws.dms"],
     "detail-type" = ["DMS Replication Instance State Change"],
-    resources     = [aws_dms_replication_instance.instance.replication_instance_arn],
+    resources     = values(aws_dms_replication_instance.instance)[*].replication_instance_arn,
   })
 }
 

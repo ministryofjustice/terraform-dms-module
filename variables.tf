@@ -152,3 +152,9 @@ variable "output_key_suffix" {
   default     = ""
   description = "The suffix to use for the output key in the S3 bucket"
 }
+
+variable "replication_instance_arns" {
+  description = "If null, create a new replication instance. If set, adopt (import) these existing instances."
+  type        = set(string)
+  default     = null
+}

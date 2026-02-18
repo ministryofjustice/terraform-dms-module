@@ -41,6 +41,8 @@ resource "aws_dms_replication_subnet_group" "replication_subnet_group" {
 }
 
 resource "aws_dms_replication_instance" "instance" {
+  for_each = local.instances
+
   allocated_storage            = var.dms_replication_instance.allocated_storage
   apply_immediately            = var.dms_replication_instance.apply_immediately
   auto_minor_version_upgrade   = true
@@ -51,11 +53,22 @@ resource "aws_dms_replication_instance" "instance" {
   preferred_maintenance_window = var.dms_replication_instance.preferred_maintenance_window
   publicly_accessible          = false
   replication_instance_class   = var.dms_replication_instance.replication_instance_class
-  replication_instance_id      = var.dms_replication_instance.replication_instance_id
-  replication_subnet_group_id  = var.dms_replication_instance.subnet_group_id == null ? aws_dms_replication_subnet_group.replication_subnet_group[0].id : var.dms_replication_instance.subnet_group_id
-  vpc_security_group_ids       = [aws_security_group.replication_instance.id]
 
-  tags = merge({ Name = var.dms_replication_instance.replication_instance_id },
+  # IMPORTANT:
+  # - For "create": this is the new ID you want
+  # - For "adopt": this MUST match the existing instance's ID, or Terraform may try to replace it
+  replication_instance_id = var.dms_replication_instance.replication_instance_id
+
+  replication_subnet_group_id = (
+    var.dms_replication_instance.subnet_group_id == null
+    ? aws_dms_replication_subnet_group.replication_subnet_group[0].id
+    : var.dms_replication_instance.subnet_group_id
+  )
+
+  vpc_security_group_ids = [aws_security_group.replication_instance.id]
+
+  tags = merge(
+    { Name = var.dms_replication_instance.replication_instance_id },
     var.tags
   )
 }
