@@ -36,13 +36,6 @@ variable "dms_replication_instance" {
   }
 }
 
-variable "replication_task_id" {
-  type = object({
-    full_load = string
-    cdc       = optional(string)
-  })
-}
-
 variable "dms_source" {
   type = object({
     engine_name                 = string,
@@ -62,14 +55,6 @@ variable "dms_source" {
     extra_connection_attributes: Extra connection attributes to be used in the connection string</br>
     cdc_start_time: The start time for the CDC task, this will need to be set to a date after the Oracle database setup has been complete (this is to ensure the logs are available)
   EOF
-}
-
-variable "dms_mapping_rules" {
-  type = object({
-    bucket = string
-    key    = string
-  })
-  description = "The path to the mapping rules file"
 }
 
 variable "output_bucket" {
