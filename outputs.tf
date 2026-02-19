@@ -10,10 +10,10 @@ output "dms_full_load_task_arn" {
 }
 
 
-output "metadata_generator_lambda_arn" {
-  value       = module.metadata_generator.lambda_function_arn
-  description = "The ARN for the metadata_generator AWS Lambda function"
+output "metadata_generator_lambda_arns" {
+  value = { for k, m in module.metadata_generator : k => m.lambda_function_arn }
 }
+
 
 output "validation_lambda_arn" {
   value       = module.validation_lambda_function.lambda_function_arn
