@@ -1,3 +1,7 @@
+locals {
+  mapping_rule_buckets = toset([for _, j in var.full_load_jobs : j.mapping_rules.bucket])
+}
+
 #S3 bucket to store source metadata
 #trivy:ignore:AVD-AWS-0089 No logging required
 resource "aws_s3_bucket" "validation_metadata" {
@@ -96,10 +100,12 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
       "s3:GetObject",
     ]
 
-    resources = [
-      "arn:aws:s3:::${var.dms_mapping_rules.bucket}",
-      "arn:aws:s3:::${var.dms_mapping_rules.bucket}/*",
-    ]
+    resources = flatten([
+      for b in local.mapping_rule_buckets : [
+        "arn:aws:s3:::${b}",
+        "arn:aws:s3:::${b}/*"
+      ]
+    ])
   }
 
   # Lambda can reprocess data in the invalid bucket
@@ -195,27 +201,26 @@ resource "aws_security_group" "metadata_generator_lambda_function" {
 
 #trivy:ignore:AVD-AWS-0066 X-Ray tracing not currently required. Logs sent to CloudWatch.
 module "metadata_generator" {
-  # Commit hash for v7.20.1
+  for_each = var.full_load_jobs
+
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-lambda?ref=84dfbfddf9483bc56afa0aff516177c03652f0c7"
 
-  function_name           = "${var.db}-metadata-generator"
-  description             = "Lambda to generate metadata for ${var.db} DMS data output"
-  handler                 = "main.handler"
-  runtime                 = "python3.12"
-  memory_size             = 4096
-  timeout                 = 900
-  architectures           = ["x86_64"]
-  build_in_docker         = false
-  store_on_s3             = true
-  s3_bucket               = aws_s3_bucket.lambda.bucket
-  s3_object_storage_class = "STANDARD"
-  s3_prefix               = "metadata-generator/"
+  function_name = "${var.db}-metadata-${each.key}"
+  description   = "Lambda to generate metadata for ${var.db} DMS data output (${each.key})"
 
-  # Lambda function will be attached to the VPC to access the source database
+  # keep existing config...
+  handler     = "main.handler"
+  runtime     = "python3.12"
+  memory_size = 4096
+  timeout     = 900
+
+  store_on_s3 = true
+  s3_bucket   = aws_s3_bucket.lambda.bucket
+  s3_prefix   = "metadata-generator/${each.key}/"
+
   vpc_security_group_ids = [aws_security_group.metadata_generator_lambda_function.id]
   vpc_subnet_ids         = data.aws_subnets.subnet_ids_vpc_subnets.ids
   attach_network_policy  = true
-
 
   attach_policy_json = true
   policy_json        = data.aws_iam_policy_document.metadata_generator_lambda_function.json
@@ -224,19 +229,24 @@ module "metadata_generator" {
     ENVIRONMENT                          = var.environment
     DB_SECRET_ARN                        = var.dms_source.secrets_manager_arn
     METADATA_BUCKET                      = aws_s3_bucket.validation_metadata.bucket
+    METADATA_PREFIX                      = "${each.key}/" # new; update lambda to use this
     LANDING_BUCKET                       = aws_s3_bucket.landing.bucket
     INVALID_BUCKET                       = aws_s3_bucket.invalid.bucket
     RAW_HISTORY_BUCKET                   = local.raw_history_bucket_id
     OUTPUT_KEY_PREFIX                    = var.output_key_prefix
+    OUTPUT_KEY_SUFFIX                    = var.output_key_suffix
     LAMBDA_BUCKET                        = aws_s3_bucket.lambda.bucket
     ENGINE                               = var.dms_source.engine_name
     DATABASE_NAME                        = var.dms_source.sid
     GLUE_CATALOG_ARN                     = var.glue_catalog_arn
     GLUE_CATALOG_ROLE_ARN                = var.glue_catalog_role_arn
     USE_GLUE_CATALOG                     = var.write_metadata_to_glue_catalog
-    DMS_MAPPING_RULES_BUCKET             = var.dms_mapping_rules.bucket
-    DMS_MAPPING_RULES_KEY                = var.dms_mapping_rules.key
+    DMS_MAPPING_RULES_BUCKET             = each.value.mapping_rules.bucket
+    DMS_MAPPING_RULES_KEY                = each.value.mapping_rules.key
     RETRY_FAILED_AFTER_RECREATE_METADATA = var.retry_failed_after_recreate_metadata
+
+    # optional, useful linkage:
+    REPLICATION_TASK_ARN = aws_dms_replication_task.full_load_replication_task[each.key].replication_task_arn
   }
 
   source_path = [{
@@ -247,5 +257,5 @@ module "metadata_generator" {
     ]
   }]
 
-  tags = var.tags
+  tags = merge(var.tags, { job = each.key })
 }

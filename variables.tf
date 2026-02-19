@@ -158,3 +158,26 @@ variable "existing_replication_instance_arn" {
   type        = string
   default     = null
 }
+
+variable "full_load_jobs" {
+  type = map(object({
+    replication_task_id = string
+    mapping_rules = object({
+      bucket = string
+      key    = string
+    })
+  }))
+  default = {}
+}
+
+variable "cdc_jobs" {
+  type = map(object({
+    replication_task_id = string
+    cdc_start_time      = string
+    mapping_rules = object({
+      bucket = string
+      key    = string
+    })
+  }))
+  default = {}
+}

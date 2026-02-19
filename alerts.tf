@@ -1,9 +1,11 @@
 locals {
-  source_ids = compact([
-    aws_dms_replication_task.full_load_replication_task.replication_task_arn,
-    length(aws_dms_replication_task.cdc_replication_task) > 0 ? aws_dms_replication_task.cdc_replication_task[0].replication_task_arn : null
-  ])
+  source_ids = compact(concat(
+    [for _, t in aws_dms_replication_task.full_load_replication_task : t.replication_task_arn],
+    [for _, t in aws_dms_replication_task.cdc_replication_task : t.replication_task_arn]
+  ))
 }
+
+
 
 resource "aws_sns_topic" "dms_events" {
   name              = "${var.db}-dms"
