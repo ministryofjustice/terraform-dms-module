@@ -158,7 +158,7 @@ variable "full_load_jobs" {
 variable "cdc_jobs" {
   type = map(object({
     replication_task_id = string
-    cdc_start_time      = string
+    cdc_start_time      = optional(string)
     mapping_rules = object({
       bucket = string
       key    = string
