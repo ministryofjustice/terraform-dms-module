@@ -117,6 +117,7 @@ This will be used to select the tables to be migrated.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_cdc_jobs"></a> [cdc\_jobs](#input\_cdc\_jobs) | n/a | <pre>map(object({<br/>    replication_task_id = string<br/>    cdc_start_time      = string<br/>    mapping_rules = object({<br/>      bucket = string<br/>      key    = string<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_create_premigration_assessement_resources"></a> [create\_premigration\_assessement\_resources](#input\_create\_premigration\_assessement\_resources) | Whether to create pre-requisites for DMS PreMigration Assessment to be run manually | `bool` | `false` | no |
 | <a name="input_db"></a> [db](#input\_db) | The database name | `string` | n/a | yes |
 | <a name="input_dms_mapping_rules"></a> [dms\_mapping\_rules](#input\_dms\_mapping\_rules) | The path to the mapping rules file | <pre>object({<br/>    bucket = string<br/>    key    = string<br/>  })</pre> | n/a | yes |
@@ -124,6 +125,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_dms_source"></a> [dms\_source](#input\_dms\_source) | extra\_connection\_attributes: Extra connection attributes to be used in the connection string</br><br/>    cdc\_start\_time: The start time for the CDC task, this will need to be set to a date after the Oracle database setup has been complete (this is to ensure the logs are available) | <pre>object({<br/>    engine_name                 = string,<br/>    secrets_manager_arn         = string,<br/>    secrets_manager_kms_arn     = string,<br/>    sid                         = string,<br/>    extra_connection_attributes = optional(string)<br/>    cdc_start_time              = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | The environment name | `string` | n/a | yes |
 | <a name="input_existing_replication_instance_arn"></a> [existing\_replication\_instance\_arn](#input\_existing\_replication\_instance\_arn) | If set, adopt (import) this existing replication instance; if null, create one. | `string` | `null` | no |
+| <a name="input_full_load_jobs"></a> [full\_load\_jobs](#input\_full\_load\_jobs) | n/a | <pre>map(object({<br/>    replication_task_id = string<br/>    mapping_rules = object({<br/>      bucket = string<br/>      key    = string<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_glue_catalog_arn"></a> [glue\_catalog\_arn](#input\_glue\_catalog\_arn) | Which glue catalog to grant metadata generator permissions to (optional) | `string` | `""` | no |
 | <a name="input_glue_catalog_role_arn"></a> [glue\_catalog\_role\_arn](#input\_glue\_catalog\_role\_arn) | Which role to use to access glue catalog (optional) | `string` | `""` | no |
 | <a name="input_output_bucket"></a> [output\_bucket](#input\_output\_bucket) | The name of the output bucket (optional, bucket will be generated if not specified)<br/>    Note that if this is specified, it is assumed all related aws\_s3\_bucket\_* resources are being managed externally and so will not be generated within this module | `string` | `""` | no |
@@ -142,12 +144,14 @@ This will be used to select the tables to be migrated.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_cdc_task_arns"></a> [cdc\_task\_arns](#output\_cdc\_task\_arns) | n/a |
 | <a name="output_dms_cdc_task_arn"></a> [dms\_cdc\_task\_arn](#output\_dms\_cdc\_task\_arn) | The ARN for the AWS DMS cdc task ARN |
-| <a name="output_dms_full_load_task_arn"></a> [dms\_full\_load\_task\_arn](#output\_dms\_full\_load\_task\_arn) | The ARN for the AWS DMS full-load task ARN |
+| <a name="output_dms_full_load_task_arn"></a> [dms\_full\_load\_task\_arn](#output\_dms\_full\_load\_task\_arn) | n/a |
 | <a name="output_dms_replication_instance_arn"></a> [dms\_replication\_instance\_arn](#output\_dms\_replication\_instance\_arn) | n/a |
 | <a name="output_dms_role_arn"></a> [dms\_role\_arn](#output\_dms\_role\_arn) | The ARN for the AWS role created for the DMS target endpoint |
+| <a name="output_full_load_task_arns"></a> [full\_load\_task\_arns](#output\_full\_load\_task\_arns) | n/a |
+| <a name="output_metadata_generator_function_names"></a> [metadata\_generator\_function\_names](#output\_metadata\_generator\_function\_names) | n/a |
 | <a name="output_metadata_generator_lambda_arn"></a> [metadata\_generator\_lambda\_arn](#output\_metadata\_generator\_lambda\_arn) | The ARN for the metadata\_generator AWS Lambda function |
-| <a name="output_terraform_rules"></a> [terraform\_rules](#output\_terraform\_rules) | n/a |
 | <a name="output_validation_lambda_arn"></a> [validation\_lambda\_arn](#output\_validation\_lambda\_arn) | The ARN for the validation AWS Lambda function |
 
 ## Resources
