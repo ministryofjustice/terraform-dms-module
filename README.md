@@ -149,7 +149,7 @@ This will be used to select the tables to be migrated.
 | <a name="output_dms_role_arn"></a> [dms\_role\_arn](#output\_dms\_role\_arn) | The ARN for the AWS role created for the DMS target endpoint |
 | <a name="output_full_load_task_arns"></a> [full\_load\_task\_arns](#output\_full\_load\_task\_arns) | n/a |
 | <a name="output_metadata_generator_function_names"></a> [metadata\_generator\_function\_names](#output\_metadata\_generator\_function\_names) | n/a |
-| <a name="output_metadata_generator_lambda_arn"></a> [metadata\_generator\_lambda\_arn](#output\_metadata\_generator\_lambda\_arn) | The ARN for the metadata\_generator AWS Lambda function |
+| <a name="output_metadata_generator_lambda_arns"></a> [metadata\_generator\_lambda\_arns](#output\_metadata\_generator\_lambda\_arns) | n/a |
 | <a name="output_validation_lambda_arn"></a> [validation\_lambda\_arn](#output\_validation\_lambda\_arn) | The ARN for the validation AWS Lambda function |
 
 ## Resources
