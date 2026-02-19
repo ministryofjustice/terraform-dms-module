@@ -144,9 +144,9 @@ This will be used to select the tables to be migrated.
 |------|-------------|
 | <a name="output_dms_cdc_task_arn"></a> [dms\_cdc\_task\_arn](#output\_dms\_cdc\_task\_arn) | The ARN for the AWS DMS cdc task ARN |
 | <a name="output_dms_full_load_task_arn"></a> [dms\_full\_load\_task\_arn](#output\_dms\_full\_load\_task\_arn) | The ARN for the AWS DMS full-load task ARN |
+| <a name="output_dms_replication_instance_arn"></a> [dms\_replication\_instance\_arn](#output\_dms\_replication\_instance\_arn) | n/a |
 | <a name="output_dms_role_arn"></a> [dms\_role\_arn](#output\_dms\_role\_arn) | The ARN for the AWS role created for the DMS target endpoint |
 | <a name="output_metadata_generator_lambda_arn"></a> [metadata\_generator\_lambda\_arn](#output\_metadata\_generator\_lambda\_arn) | The ARN for the metadata\_generator AWS Lambda function |
-| <a name="output_replication_instance_arn"></a> [replication\_instance\_arn](#output\_replication\_instance\_arn) | n/a |
 | <a name="output_terraform_rules"></a> [terraform\_rules](#output\_terraform\_rules) | n/a |
 | <a name="output_validation_lambda_arn"></a> [validation\_lambda\_arn](#output\_validation\_lambda\_arn) | The ARN for the validation AWS Lambda function |
 
