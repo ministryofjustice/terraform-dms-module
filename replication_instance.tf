@@ -54,9 +54,9 @@ resource "aws_dms_replication_instance" "instance" {
   publicly_accessible          = false
   replication_instance_class   = var.dms_replication_instance.replication_instance_class
 
-  # IMPORTANT:
-  # - For "create": this is the new ID you want
-  # - For "adopt": this MUST match the existing instance's ID, or Terraform may try to replace it
+  # IMPORTANT for adopt:
+  # This must match the existing instance's identifier,
+  # otherwise Terraform will plan to replace it.
   replication_instance_id = var.dms_replication_instance.replication_instance_id
 
   replication_subnet_group_id = (
