@@ -41,7 +41,7 @@ resource "aws_dms_replication_subnet_group" "replication_subnet_group" {
 }
 
 resource "aws_dms_replication_instance" "instance" {
-  for_each = local.instances
+  count = local.use_existing ? 0 : 1
 
   allocated_storage            = var.dms_replication_instance.allocated_storage
   apply_immediately            = var.dms_replication_instance.apply_immediately
@@ -53,22 +53,9 @@ resource "aws_dms_replication_instance" "instance" {
   preferred_maintenance_window = var.dms_replication_instance.preferred_maintenance_window
   publicly_accessible          = false
   replication_instance_class   = var.dms_replication_instance.replication_instance_class
+  replication_instance_id      = var.dms_replication_instance.replication_instance_id
+  replication_subnet_group_id  = var.dms_replication_instance.subnet_group_id == null ? aws_dms_replication_subnet_group.replication_subnet_group[0].id : var.dms_replication_instance.subnet_group_id
+  vpc_security_group_ids       = [aws_security_group.replication_instance.id]
 
-  # IMPORTANT for adopt:
-  # This must match the existing instance's identifier,
-  # otherwise Terraform will plan to replace it.
-  replication_instance_id = var.dms_replication_instance.replication_instance_id
-
-  replication_subnet_group_id = (
-    var.dms_replication_instance.subnet_group_id == null
-    ? aws_dms_replication_subnet_group.replication_subnet_group[0].id
-    : var.dms_replication_instance.subnet_group_id
-  )
-
-  vpc_security_group_ids = [aws_security_group.replication_instance.id]
-
-  tags = merge(
-    { Name = var.dms_replication_instance.replication_instance_id },
-    var.tags
-  )
+  tags = merge({ Name = var.dms_replication_instance.replication_instance_id }, var.tags)
 }

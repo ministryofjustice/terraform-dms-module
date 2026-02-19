@@ -25,6 +25,6 @@ output "dms_cdc_task_arn" {
   description = "The ARN for the AWS DMS cdc task ARN"
 }
 
-output "replication_instance_arn" {
-  value = one(values(aws_dms_replication_instance.instance)).replication_instance_arn
+output "dms_replication_instance_arn" {
+  value = local.replication_instance_arn
 }

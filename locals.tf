@@ -1,14 +1,7 @@
 locals {
-  adopt = var.existing_replication_instance_arn != null
+  use_existing = var.existing_replication_instance_arn != null
 
-  # Deterministic key for the managed resource address
-  instance_key = local.adopt ? "adopt" : "create"
-
-  # for_each map: always exactly one instance, but keyed differently by mode
-  instances = {
-    (local.instance_key) = {
-      existing_arn = var.existing_replication_instance_arn
-      mode         = local.adopt ? "adopt" : "create"
-    }
-  }
+  replication_instance_arn = (local.use_existing
+    ? var.existing_replication_instance_arn
+  : aws_dms_replication_instance.instance[0].replication_instance_arn)
 }
