@@ -109,7 +109,7 @@ resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   replication_task_settings = file("${path.module}/default_task_settings.json")
   source_endpoint_arn       = aws_dms_endpoint.source.endpoint_arn
   target_endpoint_arn       = aws_dms_s3_endpoint.s3_target.endpoint_arn
-  table_mappings            = jsonencode({ rules : local.independent_rules[each.value.full_load_name] })
+  table_mappings            = jsonencode({ rules : local.independent_rules[each.key] })
   start_replication_task    = false
 
   tags = merge(
