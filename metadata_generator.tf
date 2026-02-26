@@ -251,7 +251,7 @@ module "metadata_generator" {
 
 
 locals {
-  independent_rule_buckets = toset([for _, path in var.independent_full_loads : path.bucket])
+  independent_rule_buckets = toset([for _, job in var.independent_full_loads : job.path.bucket])
 }
 
 data "aws_iam_policy_document" "independent_metadata_generator_lambda_function" {
