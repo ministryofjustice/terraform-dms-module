@@ -409,7 +409,7 @@ module "independent_metadata_generator" {
 
 
   attach_policy_json = true
-  policy_json        = data.aws_iam_policy_document.independent_metadata_generator_lambda_function
+  policy_json        = data.aws_iam_policy_document.independent_metadata_generator_lambda_function.json
 
   environment_variables = {
     ENVIRONMENT                          = var.environment
