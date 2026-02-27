@@ -208,7 +208,7 @@ module "metadata_generator" {
   store_on_s3             = true
   s3_bucket               = aws_s3_bucket.lambda.bucket
   s3_object_storage_class = "STANDARD"
-  s3_prefix               = "metadata-generator/"
+  s3_prefix               = "metadata-generator/${var.db}/"
 
   # Lambda function will be attached to the VPC to access the source database
   vpc_security_group_ids = [aws_security_group.metadata_generator_lambda_function.id]
