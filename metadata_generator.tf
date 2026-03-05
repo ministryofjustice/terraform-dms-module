@@ -263,7 +263,7 @@ module "independent_metadata_generator" {
   # Commit hash for v7.20.1
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-lambda?ref=84dfbfddf9483bc56afa0aff516177c03652f0c7"
 
-  function_name           = "${var.db}-md-gen-${each.value.full_load_name}"
+  function_name           = "${var.db}-metadata-generator-${each.value.full_load_name}"
   description             = "Lambda to generate metadata for ${var.db} DMS data output"
   handler                 = "main.handler"
   runtime                 = "python3.12"
