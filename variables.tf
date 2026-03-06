@@ -34,13 +34,7 @@ variable "dms_replication_instance" {
     condition     = contains(["3.5.2", "3.5.3", "3.5.4"], var.dms_replication_instance.engine_version)
     error_message = "Valid values for var: test_variable are ('3.5.2', '3.5.3', '3.5.4')."
   }
-}
-
-variable "replication_task_id" {
-  type = object({
-    full_load = string
-    cdc       = optional(string)
-  })
+  description = "Properties of the dms replication instance to be used in the migration"
 }
 
 variable "dms_source" {
@@ -62,14 +56,6 @@ variable "dms_source" {
     extra_connection_attributes: Extra connection attributes to be used in the connection string</br>
     cdc_start_time: The start time for the CDC task, this will need to be set to a date after the Oracle database setup has been complete (this is to ensure the logs are available)
   EOF
-}
-
-variable "dms_mapping_rules" {
-  type = object({
-    bucket = string
-    key    = string
-  })
-  description = "The path to the mapping rules file"
 }
 
 variable "output_bucket" {
@@ -97,7 +83,8 @@ variable "s3_target_config" {
 }
 
 variable "tags" {
-  type = map(string)
+  type        = map(string)
+  description = "tags for the module"
 }
 
 variable "create_premigration_assessement_resources" {
@@ -151,4 +138,32 @@ variable "output_key_suffix" {
   type        = string
   default     = ""
   description = "The suffix to use for the output key in the S3 bucket"
+}
+
+variable "dms_mapping_rules" {
+  type = object({
+    bucket = string
+    key    = string
+  })
+  description = "The path to the mapping rules file"
+}
+
+variable "replication_task_id" {
+  type = object({
+    full_load = string
+    cdc       = optional(string)
+  })
+  description = "The replication task names to use for the full load and cdc tasks (cdc is optional, if not specified no cdc task will be created)"
+}
+
+variable "independent_full_loads" {
+  type = map(object({
+    full_load_name = string
+    path = object({
+      bucket = string
+      key    = string
+    })
+  }))
+  default     = {}
+  description = "A list of full load tasks to be set up for tables existing in the upstream database but not on the downstream database, including the name of the task (excluding the database name and 'full-load') and the bucket and object reference within it where the table mapping json file for the task exists"
 }
