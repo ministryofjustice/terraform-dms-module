@@ -1,6 +1,12 @@
 #S3 bucket to store source metadata
-#trivy:ignore:AVD-AWS-0089: No logging required
+#trivy:ignore:AVD-AWS-0089 No logging required
 resource "aws_s3_bucket" "validation_metadata" {
+  #checkov:skip=CKV2_AWS_62: no notification argument
+  #checkov:skip=CKV_AWS_18: no event notification argument
+  #checkov:skip=CKV_AWS_144: cross region replication not a thing
+  #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
+  #checkov:skip=CKV2_AWS_61: no lifecycle rules
+  #checkov:skip=CKV_AWS_145: not using kms here
   bucket_prefix = "${var.db}-metadata-"
 
   tags = var.tags
@@ -22,7 +28,7 @@ resource "aws_s3_bucket_public_access_block" "validation_metadata" {
   restrict_public_buckets = true
 }
 
-#trivy:ignore:AVD-AWS-0090: Versioning not needed
+#trivy:ignore:AVD-AWS-0090 Versioning not needed
 resource "aws_s3_bucket_versioning" "validation_metadata" {
   bucket = aws_s3_bucket.validation_metadata.id
   versioning_configuration {
@@ -30,7 +36,7 @@ resource "aws_s3_bucket_versioning" "validation_metadata" {
   }
 }
 
-#trivy:ignore:AVD-AWS-0132: Uses AES256 encryption
+#trivy:ignore:AVD-AWS-0132 Uses AES256 encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "validation_metadata" {
   bucket = aws_s3_bucket.validation_metadata.id
 
@@ -170,9 +176,10 @@ data "aws_iam_policy_document" "metadata_generator_lambda_function" {
 }
 
 # Create security group for Lambda function
-#trivy:ignore:AVD-AWS-0104: Allow all egress traffic
+#trivy:ignore:AVD-AWS-0104 Allow all egress traffic
 resource "aws_security_group" "metadata_generator_lambda_function" {
   #checkov:skip=CKV_AWS_382: Allow all egress traffic
+  #checkov:skip=CKV2_AWS_5: Security Groups are attached to another resource
   name        = "${var.db}-metadata-generator-lambda-function"
   vpc_id      = var.vpc_id
   description = "Security group for Lambda function to generate metadata for ${var.db} DMS data output"
@@ -186,6 +193,7 @@ resource "aws_security_group" "metadata_generator_lambda_function" {
   }
 }
 
+#trivy:ignore:AVD-AWS-0066 X-Ray tracing not currently required. Logs sent to CloudWatch.
 module "metadata_generator" {
   # Commit hash for v7.20.1
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-lambda?ref=84dfbfddf9483bc56afa0aff516177c03652f0c7"
@@ -232,7 +240,7 @@ module "metadata_generator" {
   }
 
   source_path = [{
-    path = "${path.module}/lambda-functions/metadata_generator/"
+    path = "${path.module}/lambda_functions/metadata_generator/"
     commands = [
       "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
       ":zip",
