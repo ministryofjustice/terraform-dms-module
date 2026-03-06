@@ -44,7 +44,7 @@ type_lookup = {
 }
 
 
-def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool=False):
+def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool = False):
     """The function will copy the object in S3 to the "bucket_to" bucket,
     while adding a timestamp to the filename. It will then
     delete the original object from "bucket_from".
@@ -200,7 +200,7 @@ class FileValidator:
         parquet_table_name: str,
         metadata_s3_keys: dict,
         metadata_bucket: str,
-        valid_files_mutable: bool=False
+        valid_files_mutable: bool = False,
     ):
         """
         Parameters
@@ -258,34 +258,36 @@ class FileValidator:
             # TODO: Implement the slack notifications - commented out for now
             event_time = datetime.utcnow().isoformat(sep=" ", timespec="milliseconds")
             location = (
-               f"https://s3.console.aws.amazon.com/s3/buckets/"
-               f"{self.fail_bucket}/{self.key}"
+                f"https://s3.console.aws.amazon.com/s3/buckets/"
+                f"{self.fail_bucket}/{self.key}"
             )
             payload = {
-               "Subject": "DMS Validation Failure",
-               "Message": f"*Event Time:* {event_time}\n*File Moved To:* {location}"
+                "Subject": "DMS Validation Failure",
+                "Message": f"*Event Time:* {event_time}\n*File Moved To:* {location}",
             }
 
-            logger.error(f"{self.key} failed validation with errors: {pformat(self.errors, indent=2)}")
+            logger.error(
+                f"{self.key} failed validation with errors: {pformat(self.errors, indent=2)}"
+            )
             self.bucket_to = self.fail_bucket
             move_object(self.bucket_to, self.bucket_from, self.key)
 
             # More slack notification code
             for error in self.errors:
-               logger.info(
-                   f"VALIDATION ERROR\n"
-                   f"File {self.key} failed validation\r"
-                   f"File moved to {location}\r"
-                   f"Reason for failure: {error}"
-               )
-               payload["Message"] += f"\n*Failure Reason:* {error}"
+                logger.info(
+                    f"VALIDATION ERROR\n"
+                    f"File {self.key} failed validation\r"
+                    f"File moved to {location}\r"
+                    f"Reason for failure: {error}"
+                )
+                payload["Message"] += f"\n*Failure Reason:* {error}"
 
             encoded_payload = json.dumps(payload).encode("utf-8")
-            http.request(
-               method="POST", url=slack_webhook_url, body=encoded_payload
-            )
+            http.request(method="POST", url=slack_webhook_url, body=encoded_payload)
         else:
-            move_object(self.bucket_to, self.bucket_from, self.key, self.valid_files_mutable)
+            move_object(
+                self.bucket_to, self.bucket_from, self.key, self.valid_files_mutable
+            )
 
     def _validate_file(self, path, fs=fs, validate_column_attributes: bool = True):
         """
@@ -492,7 +494,7 @@ def handler(event, context):  # noqa: C901 pylint: disable=unused-argument
             parquet_table_name=parquet_table_name,
             metadata_s3_keys=metadata_s3_keys,
             metadata_bucket=metadata_bucket,
-            valid_files_mutable=valid_files_mutable
+            valid_files_mutable=valid_files_mutable,
         )
     except Exception as e:
         logger.exception(f"Error creating FileValidator: {e}")
