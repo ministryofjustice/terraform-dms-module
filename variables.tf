@@ -34,6 +34,7 @@ variable "dms_replication_instance" {
     condition     = contains(["3.5.2", "3.5.3", "3.5.4"], var.dms_replication_instance.engine_version)
     error_message = "Valid values for var: test_variable are ('3.5.2', '3.5.3', '3.5.4')."
   }
+  description = "Properties of the dms replication instance to be used in the migration"
 }
 
 variable "dms_source" {
@@ -82,7 +83,8 @@ variable "s3_target_config" {
 }
 
 variable "tags" {
-  type = map(string)
+  type        = map(string)
+  description = "tags for the module"
 }
 
 variable "create_premigration_assessement_resources" {
@@ -151,6 +153,7 @@ variable "replication_task_id" {
     full_load = string
     cdc       = optional(string)
   })
+  description = "The replication task names to use for the full load and cdc tasks (cdc is optional, if not specified no cdc task will be created)"
 }
 
 variable "independent_full_loads" {
@@ -161,5 +164,6 @@ variable "independent_full_loads" {
       key    = string
     })
   }))
-  default = {}
+  default     = {}
+  description = "A list of full load tasks to be set up for tables existing in the upstream database but not on the downstream database, including the name of the task (excluding the database name and 'full-load') and the bucket and object reference within it where the table mapping json file for the task exists"
 }
