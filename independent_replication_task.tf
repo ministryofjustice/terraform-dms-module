@@ -105,7 +105,7 @@ resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   for_each                  = var.independent_full_loads
   migration_type            = "full-load"
   replication_instance_arn  = aws_dms_replication_instance.instance.replication_instance_arn
-  replication_task_id       = "${var.db}-${each.value.full_load_name}"
+  replication_task_id       = "${var.db}-full-load-${each.value.full_load_name}"
   replication_task_settings = file("${path.module}/default_task_settings.json")
   source_endpoint_arn       = aws_dms_endpoint.source.endpoint_arn
   target_endpoint_arn       = aws_dms_s3_endpoint.s3_target.endpoint_arn
@@ -113,6 +113,6 @@ resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   start_replication_task    = false
 
   tags = merge(
-    { Name = each.value.full_load_name },
+    { Name = "${var.db}-full-load-${each.value.full_load_name}" },
   var.tags)
 }
