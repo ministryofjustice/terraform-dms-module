@@ -15,10 +15,12 @@ resource "aws_secretsmanager_secret" "dms_sandbox_secret" {
   kms_key_id = module.dms_test_kms.key_arn
 }
 
+#trivy:ignore:AVD-AWS-0066 X-Ray tracing not currently required. Logs sent to CloudWatch.
 module "test_dms_implementation" {
   # checkov:skip=CKV_TF_1: ignore check in example
   # checkov:skip=CKV_TF_2: ignore check in example
-  source = "github.com/ministryofjustice/terraform-dms-module?ref=test"
+  # tflint-ignore: terraform_module_pinned_source
+  source = "github.com/ministryofjustice/terraform-dms-module?ref=main"
 
   vpc_id      = module.vpc.vpc_id
   environment = local.tags.environment-name
@@ -60,6 +62,6 @@ module "test_dms_implementation" {
 
   tags = local.tags
 
-  glue_catalog_arn = "arn:aws:glue:eu-west-1:12345678:catalog"
+  glue_catalog_arn      = "arn:aws:glue:eu-west-1:12345678:catalog"
   glue_catalog_role_arn = "arn:aws:iam::87654321:role/de-role"
 }
