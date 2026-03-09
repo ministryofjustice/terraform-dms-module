@@ -165,5 +165,5 @@ variable "independent_full_loads" {
     })
   }))
   default     = {}
-  description = "A list of full load tasks to be set up for tables existing in the upstream database but not on the downstream database, including the name of the task (excluding the database name and 'full-load') and the bucket and object reference within it where the table mapping json file for the task exists"
+  description = "A list of full load tasks to be set up for tables existing in the upstream database but not downstream, including the name of the task (excluding the database name and 'full-load') and the bucket and object reference within it where the table mapping json file for the task exists"
 }
