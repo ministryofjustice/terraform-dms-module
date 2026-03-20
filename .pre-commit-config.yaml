@@ -19,14 +19,6 @@ repos:
         args:
           - --args=--init
 
-      # Run Trivy using system-installed Trivy
-      - id: terraform_trivy
-        # System hook: Trivy must be installed on PATH
-        args:
-          - --args=--skip-dirs=**.terraform
-          - --args=--skip-dirs=**examples
-          - --args=--severity=HIGH,CRITICAL
-
       # Run Checkov for misconfigurations
       - id: terraform_checkov
         pass_filenames: false
