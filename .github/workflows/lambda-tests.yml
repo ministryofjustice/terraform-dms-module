@@ -19,7 +19,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
       - name: SLSA
-        uses: ministryofjustice/devsecops-actions/sca/slsa@f965eb1771ec66cfc41d7d57dc607fa6dfbc10ed # v1.4.0
+        uses: ministryofjustice/devsecops-actions/sca/slsa@4cd163be7859cd130800d6719d925318826038ea
       - name: Install dependencies
         run: |
           uv venv
