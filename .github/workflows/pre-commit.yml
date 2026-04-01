@@ -28,19 +28,10 @@ jobs:
         with:
           tflint_version: latest
 
+      - name: SLSA
+        uses: ministryofjustice/devsecops-actions/sca/slsa@4cd163be7859cd130800d6719d925318826038ea
+
       - name: Install checkov
-        run: pip install --upgrade pip checkov
+        run: pip install checkov "git+https://github.com/bridgecrewio/checkov.git@06eee8f8d272856217e5f982011e3a42b39aba62" # v3.2.513
 
-      - name: Install prek
-        run: pip install prek
-
-      - name: Cache prek
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.0
-        with:
-          path: ~/.cache/prek
-          key: prek-${{ hashFiles('.pre-commit-config.yaml') }}
-          restore-keys: |
-            prek-
-
-      - name: Run prek
-        run: prek run --all-files
+      - uses: j178/prek-action@53276d8b0d10f8b6672aa85b4588c6921d0370cc # v2.0.1
