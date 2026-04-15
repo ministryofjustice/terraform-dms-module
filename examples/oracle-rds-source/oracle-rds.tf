@@ -115,8 +115,9 @@ resource "aws_db_instance" "oracle" {
 
 resource "aws_secretsmanager_secret" "oracle_admin" {
   # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
-  name       = "laa-df-dev/oracle-dms-test/admin"
-  kms_key_id = aws_kms_key.dms_test.arn
+  name                    = "laa-df-dev/oracle-dms-test/admin"
+  kms_key_id              = aws_kms_key.dms_test.arn
+  recovery_window_in_days = 0
 
   tags = merge(var.tags, {
     Name = "laa-df-dev/oracle-dms-test/admin"
@@ -139,8 +140,9 @@ resource "aws_secretsmanager_secret_version" "oracle_admin" {
 
 resource "aws_secretsmanager_secret" "oracle_dms_user" {
   # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
-  name       = "laa-df-dev/oracle-dms-test/dms-user"
-  kms_key_id = aws_kms_key.dms_test.arn
+  name                    = "laa-df-dev/oracle-dms-test/dms-user"
+  kms_key_id              = aws_kms_key.dms_test.arn
+  recovery_window_in_days = 0
 
   tags = merge(var.tags, {
     Name = "laa-df-dev/oracle-dms-test/dms-user"
