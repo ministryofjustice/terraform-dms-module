@@ -25,3 +25,7 @@ output "oracle_security_group_id" {
 output "oracle_instance_id" {
   value = aws_db_instance.oracle.id
 }
+
+output "sql_runner_lambda_name" {
+  value = aws_lambda_function.oracle_sql_runner.function_name
+}
