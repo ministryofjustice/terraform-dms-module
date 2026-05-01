@@ -17,3 +17,6 @@ dependencies = [
     "s3fs>=2026.1.0",
     "sqlalchemy>=2.0.45",
 ]
+
+[tool.uv]
+exclude-newer = "7 days"
