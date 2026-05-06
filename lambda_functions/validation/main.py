@@ -108,7 +108,7 @@ def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool = Fals
 
 
 def strip_data_type(data_type: str) -> str:
-    """Some data types define units within brackets that are asociated with the
+    """Some data types define units within brackets that are associated with the
     properties of that data type. This function will strip brackets and units
     from the given data type.
     Parameters

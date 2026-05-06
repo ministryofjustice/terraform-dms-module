@@ -1,3 +1,4 @@
+---
 # .terraform-docs.yaml
 formatter: markdown table
 sections:

@@ -16,6 +16,7 @@ dependencies = [
     "pytest>=9.0.2",
     "s3fs>=2026.1.0",
     "sqlalchemy>=2.0.45",
+    "mypy>=1.20.1",
 ]
 
 [tool.uv]

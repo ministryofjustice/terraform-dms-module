@@ -80,7 +80,7 @@ def secret_payload():
     return {
         "dbInstanceIdentifier": "mydbid",
         "username": "user",
-        "oracle_password": "pass",
+        "oracle_password": "pass",  # pragma: allowlist secret
         "engine": "oracle",
         "host": "db.example",
         "dbname": "ORCL",

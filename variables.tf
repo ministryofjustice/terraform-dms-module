@@ -87,7 +87,7 @@ variable "tags" {
   description = "tags for the module"
 }
 
-variable "create_premigration_assessement_resources" {
+variable "create_premigration_assessment_resources" {
   type        = bool
   default     = false
   description = "Whether to create pre-requisites for DMS PreMigration Assessment to be run manually"
@@ -102,7 +102,7 @@ variable "retry_failed_after_recreate_metadata" {
 variable "write_metadata_to_glue_catalog" {
   type        = bool
   default     = true
-  description = "Whether to write metdata to glue catalog"
+  description = "Whether to write metadata to glue catalog"
 }
 
 variable "valid_files_mutable" {

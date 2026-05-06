@@ -90,7 +90,7 @@ exec rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD','PRIMARY KEY');
 GRANT SELECT ON <SCHEMA_NAME>.<TABLE_NAME> TO DMS;
 ```
 
-- Create an AWS Secret in Secrets Manager for the DMS user with the follwing details
+- Create an AWS Secret in Secrets Manager for the DMS user with the following details
 
 ```json
 {
