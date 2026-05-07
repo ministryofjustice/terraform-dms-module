@@ -17,7 +17,18 @@ dependencies = [
     "s3fs>=2026.1.0",
     "sqlalchemy>=2.0.45",
     "mypy>=1.20.1",
+    "types-aws-xray-sdk>=2.15.0",
+    "boto3-stubs>=1.43.0",
 ]
 
 [tool.uv]
 exclude-newer = "7 days"
+
+[tool.mypy]
+strict = true
+disallow_untyped_defs = true
+exclude = "migrations|dist|build|typings"
+explicit_package_bases = true
+warn_unused_ignores = true
+show_error_codes = true
+mypy_path = "lambda_functions"

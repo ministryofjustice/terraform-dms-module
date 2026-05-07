@@ -2,6 +2,7 @@ import json
 import os
 import importlib
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -53,10 +54,10 @@ validation_mod = importlib.import_module("lambda_functions.validation.main")
 
 
 class FakePaginator:
-    def __init__(self, pages):
+    def __init__(self, pages: list[Any]) -> None:
         self._pages = pages
 
-    def paginate(self, **kwargs):
+    def paginate(self, **kwargs: Any) -> Any:
         return iter(self._pages)
 
 
@@ -65,7 +66,7 @@ class FakeTable:
         self.name = name
 
 
-def _glue_with_entity_not_found():
+def _glue_with_entity_not_found() -> Any:
     glue = MagicMock()
 
     class EntityNotFoundException(Exception):
@@ -76,7 +77,7 @@ def _glue_with_entity_not_found():
 
 
 @pytest.fixture
-def secret_payload():
+def secret_payload() -> dict[str, Any]:
     return {
         "dbInstanceIdentifier": "mydbid",
         "username": "user",
@@ -88,7 +89,7 @@ def secret_payload():
 
 
 @pytest.fixture
-def mapping_rules():
+def mapping_rules() -> dict[str, Any]:
     return {"objects": ["T1", "T2"], "schema": "myschema"}
 
 
@@ -97,10 +98,10 @@ def mapping_rules():
 # =====================================================================
 
 
-def test_get_glue_client_without_role(monkeypatch):
+def test_get_glue_client_without_role(monkeypatch: Any) -> None:
     monkeypatch.delenv("GLUE_CATALOG_ROLE_ARN", raising=False)
 
-    def fake_client(service, **kwargs):
+    def fake_client(service: str, **kwargs: Any) -> Any:
         if service == "glue":
             assert kwargs == {}
             glue = MagicMock()
@@ -125,17 +126,17 @@ def test_get_glue_client_without_role(monkeypatch):
 @patch.object(metadata_mod, "_get_s3")
 @patch.object(metadata_mod, "_get_secretmanager")
 def test_metadata_handler_creates_db_and_tables_and_writes_s3(
-    get_secretmanager,
-    get_s3,
-    get_glue_client,
-    create_engine,
-    MetadataExtractor,
-    GlueConverter,
-    reprocess_failed_records,
-    secret_payload,
-    mapping_rules,
-    monkeypatch,
-):
+    get_secretmanager: Any,
+    get_s3: Any,
+    get_glue_client: Any,
+    create_engine: Any,
+    MetadataExtractor: Any,
+    GlueConverter: Any,
+    reprocess_failed_records: Any,
+    secret_payload: dict[str, Any],
+    mapping_rules: dict[str, Any],
+    monkeypatch: Any,
+) -> None:
     # Ensure handler sees the intended module globals
     monkeypatch.setattr(metadata_mod, "db_secret_arn", "arn:db-secret")
     monkeypatch.setattr(metadata_mod, "dms_mapping_rules_bucket", "rules-bucket")
@@ -201,23 +202,25 @@ def test_metadata_handler_creates_db_and_tables_and_writes_s3(
 # =====================================================================
 
 
-def test_validation_strip_data_type_valid():
+def test_validation_strip_data_type_valid() -> None:
     assert validation_mod.strip_data_type("decimal128(38,0)") == "decimal"
     assert validation_mod.strip_data_type("timestamp(s)") == "timestamp"
     assert validation_mod.strip_data_type("character") == "character"
 
 
-def test_validation_strip_data_type_invalid_raises():
+def test_validation_strip_data_type_invalid_raises() -> None:
     with pytest.raises(validation_mod.MetadataTypeMismatchException):
         validation_mod.strip_data_type("not-a-type(1)")
 
 
-def test_validation_return_agnostic_type_maps():
+def test_validation_return_agnostic_type_maps() -> None:
     assert validation_mod.return_agnostic_type("string") == "character"
     assert validation_mod.return_agnostic_type("int64", column_name="id") == "decimal"
 
 
-def test_validation_handler_builds_metadata_keys_and_executes(monkeypatch):
+def test_validation_handler_builds_metadata_keys_and_executes(
+    monkeypatch: object,
+) -> None:
     # Patch global s3 client in validation module
     s3_client = MagicMock()
     s3_client.get_paginator.return_value = FakePaginator(
