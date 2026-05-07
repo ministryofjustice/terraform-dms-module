@@ -387,7 +387,10 @@ def handler(event: dict[str, Any], context: Any) -> None:
             match = re.match(r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn)
             if match:
                 catalogId = match.groups()
-                assert len(catalogId) == 1
+                if len(catalogId) != 1:
+                    raise ValueError(
+                        f"Expected exactly one account ID in glue_catalog_arn, got {len(catalogId)}"
+                    )
                 glue_kwargs["CatalogId"] = catalogId[0]
         try:
             glue.get_database(Name=db_identifier, **glue_kwargs)
