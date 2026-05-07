@@ -13,7 +13,7 @@ from aws_xray_sdk.core import patch_all, xray_recorder
 from dotenv import load_dotenv
 from mojap_metadata import Metadata  # type: ignore[import-untyped]
 from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter  # type: ignore[import-untyped]
-from mojap_metadata.converters.glue_converter import GlueConverter  # type: ignore[import-untyped] 
+from mojap_metadata.converters.glue_converter import GlueConverter  # type: ignore[import-untyped]
 from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter  # type: ignore[import-untyped]
 from sqlalchemy import Engine, create_engine
 import ast
@@ -384,9 +384,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
         glue_kwargs = {}
         if glue_catalog_arn:
             # Get account name from glue catalog arn to use as catalogId
-            match = re.match(
-                r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn
-            )
+            match = re.match(r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn)
             if match:
                 catalogId = match.groups()
                 assert len(catalogId) == 1
