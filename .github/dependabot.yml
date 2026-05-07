@@ -13,6 +13,12 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 7
+      exclude:
+        - "ministryofjustice/data-engineering-github-actions*"
+    groups:
+      data-engineering-github-actions:
+        patterns:
+          - "ministryofjustice/data-engineering-github-actions*"
   - package-ecosystem: "gomod"
     directory: "/test"
     schedule:
