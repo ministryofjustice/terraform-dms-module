@@ -31,7 +31,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.42"
     }
   }
 }
@@ -117,7 +117,7 @@ This will be used to select the tables to be migrated.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_premigration_assessment_resources"></a> [create\_premigration\_assessement\_resources](#input\_create\_premigration\_assessement\_resources) | Whether to create pre-requisites for DMS PreMigration Assessment to be run manually | `bool` | `false` | no |
+| <a name="input_create_premigration_assessment_resources"></a> [create\_premigration\_assessment\_resources](#input\_create\_premigration\_assessment\_resources) | Whether to create pre-requisites for DMS PreMigration Assessment to be run manually | `bool` | `false` | no |
 | <a name="input_db"></a> [db](#input\_db) | The database name | `string` | n/a | yes |
 | <a name="input_dms_mapping_rules"></a> [dms\_mapping\_rules](#input\_dms\_mapping\_rules) | The path to the mapping rules file | <pre>object({<br/>    bucket = string<br/>    key    = string<br/>  })</pre> | n/a | yes |
 | <a name="input_dms_replication_instance"></a> [dms\_replication\_instance](#input\_dms\_replication\_instance) | Properties of the dms replication instance to be used in the migration | <pre>object({<br/>    replication_instance_id      = string<br/>    subnet_group_id              = optional(string)<br/>    subnet_group_name            = optional(string)<br/>    subnet_ids                   = optional(list(string))<br/>    allocated_storage            = number<br/>    availability_zone            = string<br/>    engine_version               = string<br/>    kms_key_arn                  = string<br/>    multi_az                     = bool<br/>    replication_instance_class   = string<br/>    inbound_cidr                 = string<br/>    apply_immediately            = optional(bool, false)<br/>    preferred_maintenance_window = optional(string, "sun:10:30-sun:14:30")<br/>  })</pre> | n/a | yes |
