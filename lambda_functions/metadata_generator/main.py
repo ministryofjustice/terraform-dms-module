@@ -11,11 +11,11 @@ import boto3
 import oracledb
 from aws_xray_sdk.core import patch_all, xray_recorder
 from dotenv import load_dotenv
-from mojap_metadata import Metadata
-from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
-from mojap_metadata.converters.glue_converter import GlueConverter
-from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
-from sqlalchemy import create_engine
+from mojap_metadata import Metadata  # type: ignore[import-untyped]
+from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter  # type: ignore[import-untyped]
+from mojap_metadata.converters.glue_converter import GlueConverter  # type: ignore[import-untyped] 
+from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter  # type: ignore[import-untyped]
+from sqlalchemy import Engine, create_engine
 import ast
 
 patch_all()
@@ -27,7 +27,7 @@ landing_bucket_name = os.getenv("LANDING_BUCKET")
 dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
 dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
 lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
-metadata_bucket = os.getenv("METADATA_BUCKET")
+metadata_bucket = os.environ["METADATA_BUCKET"]
 db_secret_arn = os.getenv("DB_SECRET_ARN")
 retry_failed_after_recreate_metadata = (
     os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
@@ -73,7 +73,7 @@ def _get_s3() -> Any:
     return boto3.client("s3")
 
 
-oracledb.version = "8.3.0"
+oracledb.version = "8.3.0"  # type: ignore[assignment]
 sys.modules["cx_Oracle"] = oracledb
 load_dotenv()
 
@@ -138,7 +138,7 @@ class MetadataExtractor:
     + extract table partitions_
     """
 
-    def __init__(self, db_options: dict[str, Any], engine: Any) -> None:
+    def __init__(self, db_options: dict[str, Any], engine: Engine) -> None:
         self.source_database = db_options["database"]
         self.database_identifier = db_options["identifier"]
         self.schema_name = db_options["schema"].lower()
@@ -320,7 +320,7 @@ class MetadataExtractor:
                 f"Expected object to be of format `table` or `schema.table` but got {obj_str}"
             )
 
-    def get_database_metadata(self, output_bucket: str) -> list[Any]:
+    def get_database_metadata(self, output_bucket: str) -> list[Metadata]:
         tables = [
             self.get_table_metadata(*self.get_schema_and_table_from_object(obj))
             for obj in self.objects
@@ -384,11 +384,13 @@ def handler(event: dict[str, Any], context: Any) -> None:
         glue_kwargs = {}
         if glue_catalog_arn:
             # Get account name from glue catalog arn to use as catalogId
-            catalogId = re.match(
+            match = re.match(
                 r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn
-            ).groups()
-            assert len(catalogId) == 1
-            glue_kwargs["CatalogId"] = catalogId[0]
+            )
+            if match:
+                catalogId = match.groups()
+                assert len(catalogId) == 1
+                glue_kwargs["CatalogId"] = catalogId[0]
         try:
             glue.get_database(Name=db_identifier, **glue_kwargs)
             logger.info(f"Database {db_identifier} already exists in Glue Catalog")

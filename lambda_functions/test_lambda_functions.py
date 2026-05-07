@@ -98,7 +98,7 @@ def mapping_rules() -> dict[str, Any]:
 # =====================================================================
 
 
-def test_get_glue_client_without_role(monkeypatch: Any) -> None:
+def test_get_glue_client_without_role(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GLUE_CATALOG_ROLE_ARN", raising=False)
 
     def fake_client(service: str, **kwargs: Any) -> Any:
@@ -135,7 +135,7 @@ def test_metadata_handler_creates_db_and_tables_and_writes_s3(
     reprocess_failed_records: Any,
     secret_payload: dict[str, Any],
     mapping_rules: dict[str, Any],
-    monkeypatch: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Ensure handler sees the intended module globals
     monkeypatch.setattr(metadata_mod, "db_secret_arn", "arn:db-secret")
@@ -219,7 +219,7 @@ def test_validation_return_agnostic_type_maps() -> None:
 
 
 def test_validation_handler_builds_metadata_keys_and_executes(
-    monkeypatch: object,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Patch global s3 client in validation module
     s3_client = MagicMock()

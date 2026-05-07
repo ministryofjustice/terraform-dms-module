@@ -8,7 +8,7 @@ from typing import Any, Optional
 from urllib.parse import unquote_plus
 
 import boto3
-import s3fs
+import s3fs  # type: ignore[import-untyped]
 from aws_xray_sdk.core import patch_all
 from pyarrow import ArrowInvalid
 from pyarrow.parquet import ParquetFile
@@ -321,7 +321,7 @@ class FileValidator:
 
     def _validate_column_attributes(
         self,
-        parquet_file: Any,
+        parquet_file: ParquetFile,
         validate_column_names: bool = True,
         validate_column_types: bool = True,
     ) -> None:
