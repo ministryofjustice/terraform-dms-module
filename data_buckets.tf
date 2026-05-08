@@ -227,12 +227,12 @@ resource "aws_s3_bucket" "premigration_assessment" {
   #checkov:skip=CKV_AWS_21: bucket versioning argument deprecated
   #checkov:skip=CKV2_AWS_61: no lifecycle rules
   #checkov:skip=CKV_AWS_145: not using kms here
-  count         = var.create_premigration_assessement_resources ? 1 : 0
+  count         = var.create_premigration_assessment_resources ? 1 : 0
   bucket_prefix = "${var.db}-pma-"
 }
 
 resource "aws_s3_bucket_ownership_controls" "premigration_assessment" {
-  count  = var.create_premigration_assessement_resources ? 1 : 0
+  count  = var.create_premigration_assessment_resources ? 1 : 0
   bucket = aws_s3_bucket.premigration_assessment[0].id
   rule {
     object_ownership = "BucketOwnerEnforced"
@@ -240,7 +240,7 @@ resource "aws_s3_bucket_ownership_controls" "premigration_assessment" {
 }
 
 resource "aws_s3_bucket_public_access_block" "premigration_assessment" {
-  count  = var.create_premigration_assessement_resources ? 1 : 0
+  count  = var.create_premigration_assessment_resources ? 1 : 0
   bucket = aws_s3_bucket.premigration_assessment[0].id
 
   block_public_acls       = true
@@ -251,7 +251,7 @@ resource "aws_s3_bucket_public_access_block" "premigration_assessment" {
 
 #trivy:ignore:AVD-AWS-0090 Versioning not needed
 resource "aws_s3_bucket_versioning" "premigration_assessment" {
-  count  = var.create_premigration_assessement_resources ? 1 : 0
+  count  = var.create_premigration_assessment_resources ? 1 : 0
   bucket = aws_s3_bucket.premigration_assessment[0].id
   versioning_configuration {
     status = "Disabled"
@@ -260,7 +260,7 @@ resource "aws_s3_bucket_versioning" "premigration_assessment" {
 
 #trivy:ignore:AVD-AWS-0132 Uses AES256 encryption
 resource "aws_s3_bucket_server_side_encryption_configuration" "premigration_assessment" {
-  count  = var.create_premigration_assessement_resources ? 1 : 0
+  count  = var.create_premigration_assessment_resources ? 1 : 0
   bucket = aws_s3_bucket.premigration_assessment[0].id
 
   rule {
