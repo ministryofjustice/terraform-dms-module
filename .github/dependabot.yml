@@ -19,9 +19,3 @@ updates:
       data-engineering-github-actions:
         patterns:
           - "ministryofjustice/data-engineering-github-actions*"
-  - package-ecosystem: "gomod"
-    directory: "/test"
-    schedule:
-      interval: "daily"
-    cooldown:
-      default-days: 7
