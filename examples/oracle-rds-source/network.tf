@@ -21,16 +21,6 @@ data "aws_subnets" "data" {
   }
 }
 
-data "aws_subnets" "private" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.shared.id]
-  }
-  tags = {
-    Name = "laa-development-general-private-*"
-  }
-}
-
 # --- KMS Key ---
 
 resource "aws_kms_key" "dms_test" {

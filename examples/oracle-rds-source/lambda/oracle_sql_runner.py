@@ -1,10 +1,12 @@
 # Utility Lambda for executing SQL against Oracle RDS in private subnets.
 # Use this when no EC2 bastion/jump host is available for direct bash connectivity.
 import json
+from typing import Any
+
 import oracledb
 
 
-def handler(event, context):
+def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     """Execute SQL statements against Oracle RDS.
 
     Event format:
@@ -32,18 +34,35 @@ def handler(event, context):
             for sql in statements:
                 sql_stripped = sql.strip()
                 # Only strip trailing semicolons from plain SQL, not PL/SQL blocks
-                if not sql_stripped.upper().startswith("BEGIN") and not sql_stripped.upper().startswith("DECLARE"):
+                if not sql_stripped.upper().startswith(
+                    "BEGIN"
+                ) and not sql_stripped.upper().startswith("DECLARE"):
                     sql_stripped = sql_stripped.rstrip(";")
                 try:
                     with conn.cursor() as cursor:
                         cursor.execute(sql_stripped)
                         if cursor.description:
                             columns = [col[0] for col in cursor.description]
-                            rows = [dict(zip(columns, row)) for row in cursor.fetchmany(100)]
-                            results.append({"sql": sql, "status": "ok", "columns": columns, "rows": rows})
+                            rows = [
+                                dict(zip(columns, row)) for row in cursor.fetchmany(100)
+                            ]
+                            results.append(
+                                {
+                                    "sql": sql,
+                                    "status": "ok",
+                                    "columns": columns,
+                                    "rows": rows,
+                                }
+                            )
                         else:
                             conn.commit()
-                            results.append({"sql": sql, "status": "ok", "rowcount": cursor.rowcount})
+                            results.append(
+                                {
+                                    "sql": sql,
+                                    "status": "ok",
+                                    "rowcount": cursor.rowcount,
+                                }
+                            )
                 except Exception as e:
                     results.append({"sql": sql, "status": "error", "error": str(e)})
     except Exception as e:

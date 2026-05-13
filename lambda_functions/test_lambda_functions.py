@@ -261,3 +261,90 @@ def test_validation_handler_builds_metadata_keys_and_executes(
         "table2": "metadata/table2.json",
     }
     fv_instance.execute.assert_called_once()
+
+
+def _sqs_event_wrapping_s3(message_id, bucket, key):
+    """Build an SQS-wrapped S3 ObjectCreated event (as Lambda receives it)."""
+    s3_event = {
+        "Records": [
+            {
+                "s3": {
+                    "bucket": {"name": bucket},
+                    "object": {"key": key},
+                }
+            }
+        ]
+    }
+    return {
+        "Records": [
+            {
+                "messageId": message_id,
+                "eventSource": "aws:sqs",
+                "body": json.dumps(s3_event),
+            }
+        ]
+    }
+
+
+def test_validation_handler_unwraps_sqs_message_and_processes(monkeypatch):
+    s3_client = MagicMock()
+    s3_client.get_paginator.return_value = FakePaginator(
+        pages=[{"Contents": [{"Key": "metadata/table1.json"}]}]
+    )
+    monkeypatch.setattr(validation_mod, "client", s3_client)
+
+    fv_instance = MagicMock()
+    FileValidator_cls = MagicMock(return_value=fv_instance)
+    monkeypatch.setattr(validation_mod, "FileValidator", FileValidator_cls)
+
+    event = _sqs_event_wrapping_s3(
+        "msg-1", "source-bucket", "raw/myschema/table1/file.parquet"
+    )
+
+    result = validation_mod.handler(event, SimpleNamespace())
+
+    # Successful processing: empty batch failures -> SQS deletes the message
+    assert result == {"batchItemFailures": []}
+    fv_instance.execute.assert_called_once()
+
+
+def test_validation_handler_reports_partial_batch_failure_on_exception(monkeypatch):
+    s3_client = MagicMock()
+    s3_client.get_paginator.return_value = FakePaginator(
+        pages=[{"Contents": [{"Key": "metadata/table1.json"}]}]
+    )
+    monkeypatch.setattr(validation_mod, "client", s3_client)
+
+    # FileValidator.execute raises -> handler should report this messageId
+    # in batchItemFailures so SQS retries only this message.
+    fv_instance = MagicMock()
+    fv_instance.execute.side_effect = RuntimeError("boom")
+    FileValidator_cls = MagicMock(return_value=fv_instance)
+    monkeypatch.setattr(validation_mod, "FileValidator", FileValidator_cls)
+
+    event = _sqs_event_wrapping_s3(
+        "msg-poison", "source-bucket", "raw/myschema/table1/bad.parquet"
+    )
+
+    result = validation_mod.handler(event, SimpleNamespace())
+
+    assert result == {"batchItemFailures": [{"itemIdentifier": "msg-poison"}]}
+
+
+def test_validation_handler_reports_failure_on_malformed_sqs_body(monkeypatch):
+    s3_client = MagicMock()
+    monkeypatch.setattr(validation_mod, "client", s3_client)
+
+    event = {
+        "Records": [
+            {
+                "messageId": "msg-bad-json",
+                "eventSource": "aws:sqs",
+                "body": "not-valid-json",
+            }
+        ]
+    }
+
+    result = validation_mod.handler(event, SimpleNamespace())
+
+    assert result == {"batchItemFailures": [{"itemIdentifier": "msg-bad-json"}]}

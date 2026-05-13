@@ -1,9 +1,3 @@
-variable "environment" {
-  type        = string
-  default     = "development"
-  description = "Environment name"
-}
-
 variable "tags" {
   type = map(string)
   default = {

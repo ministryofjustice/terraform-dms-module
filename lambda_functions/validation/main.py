@@ -458,11 +458,33 @@ class FileValidator:
                 self._add_error(error=str(e))
 
 
-def handler(event: dict[str, Any], context: Any) -> None:  # noqa: C901 pylint: disable=unused-argument
-    # Get the bucket and key from the event
-    record = event["Records"][0]
-    bucket_from = record["s3"]["bucket"]["name"]
-    key = unquote_plus(record["s3"]["object"]["key"])
+def _extract_s3_records(event: dict[str, Any]):
+    """Yield (message_id, s3_record) tuples from a Lambda event.
+
+    Supports both:
+    - Direct S3 invocation: event["Records"] = [{"s3": {...}}, ...]
+      (message_id is None — partial-batch reporting does not apply)
+    - SQS-wrapped S3 events: event["Records"] = [{"messageId": ..., "body": "<json S3 event>"}, ...]
+      Each SQS message body contains its own S3 event with one or more S3 records.
+    """
+    for record in event.get("Records", []):
+        if record.get("eventSource") == "aws:sqs":
+            message_id = record.get("messageId")
+            try:
+                inner = json.loads(record["body"])
+            except (KeyError, json.JSONDecodeError):
+                logger.exception("Failed to parse SQS message body as JSON")
+                yield message_id, None
+                continue
+            for s3_record in inner.get("Records", []):
+                yield message_id, s3_record
+        else:
+            yield None, record
+
+
+def _process_record(s3_record: dict[str, Any]) -> None:
+    bucket_from = s3_record["s3"]["bucket"]["name"]
+    key = unquote_plus(s3_record["s3"]["object"]["key"])
 
     logger.info(f"Bucket from: {bucket_from}")
     logger.info(f"Key: {key}")
@@ -489,20 +511,44 @@ def handler(event: dict[str, Any], context: Any) -> None:  # noqa: C901 pylint: 
     logger.info(f"Metadata S3 keys: {metadata_s3_keys}")
     logger.info(f"Parquet table name: {parquet_table_name}")
 
-    try:
-        fileValidator = FileValidator(
-            key=key,
-            pass_bucket=pass_bucket,
-            fail_bucket=fail_bucket,
-            bucket_from=bucket_from,
-            parquet_table_name=parquet_table_name,
-            metadata_s3_keys=metadata_s3_keys,
-            metadata_bucket=metadata_bucket,
-            valid_files_mutable=valid_files_mutable,
-        )
-    except Exception as e:
-        logger.exception(f"Error creating FileValidator: {e}")
-        # Raise exception to stop the Lambda function
-        raise e
-
+    fileValidator = FileValidator(
+        key=key,
+        pass_bucket=pass_bucket,
+        fail_bucket=fail_bucket,
+        bucket_from=bucket_from,
+        parquet_table_name=parquet_table_name,
+        metadata_s3_keys=metadata_s3_keys,
+        metadata_bucket=metadata_bucket,
+        valid_files_mutable=valid_files_mutable,
+    )
     fileValidator.execute()
+
+
+def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:  # noqa: C901 pylint: disable=unused-argument
+    # Track which SQS messages failed so SQS can redeliver only those,
+    # rather than the whole batch (requires ReportBatchItemFailures on the
+    # event source mapping).
+    batch_item_failures = []
+
+    for message_id, s3_record in _extract_s3_records(event):
+        if s3_record is None:
+            # Malformed SQS message body — mark as failed so it goes to DLQ
+            # after maxReceiveCount instead of being silently dropped.
+            if message_id is not None:
+                batch_item_failures.append({"itemIdentifier": message_id})
+            continue
+        try:
+            _process_record(s3_record)
+        except Exception:
+            logger.exception(
+                f"Validation failed for SQS messageId={message_id} "
+                f"key={s3_record.get('s3', {}).get('object', {}).get('key')}"
+            )
+            if message_id is not None:
+                batch_item_failures.append({"itemIdentifier": message_id})
+            else:
+                # Direct S3 invocation has no batch reporting — re-raise so
+                # S3 sees the failure and can retry per its own policy.
+                raise
+
+    return {"batchItemFailures": batch_item_failures}
