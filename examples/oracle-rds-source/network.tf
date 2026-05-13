@@ -42,11 +42,11 @@ resource "aws_kms_key" "dms_test" {
   })
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-dms-test"
+    Name = "${var.name_prefix}-dms-test"
   })
 }
 
 resource "aws_kms_alias" "dms_test" {
-  name          = "alias/laa-df-dev-dms-test"
+  name          = "alias/${var.name_prefix}-dms-test"
   target_key_id = aws_kms_key.dms_test.key_id
 }

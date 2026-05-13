@@ -18,18 +18,18 @@ resource "random_password" "dms_user" {
 # --- DB Subnet Group ---
 
 resource "aws_db_subnet_group" "oracle" {
-  name       = "laa-df-dev-oracle-dms-test"
+  name       = "${var.name_prefix}-oracle-dms-test"
   subnet_ids = data.aws_subnets.data.ids
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-dms-test"
+    Name = "${var.name_prefix}-oracle-dms-test"
   })
 }
 
 # --- Parameter Group (supplemental logging support) ---
 
 resource "aws_db_parameter_group" "oracle" {
-  name   = "laa-df-dev-oracle-dms"
+  name   = "${var.name_prefix}-oracle-dms"
   family = "oracle-se2-19"
 
   parameter {
@@ -38,19 +38,19 @@ resource "aws_db_parameter_group" "oracle" {
   }
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-dms"
+    Name = "${var.name_prefix}-oracle-dms"
   })
 }
 
 # --- Security Group ---
 
 resource "aws_security_group" "oracle" {
-  name        = "laa-df-dev-oracle-dms-test"
+  name        = "${var.name_prefix}-oracle-dms-test"
   description = "Allow DMS replication instance access to Oracle RDS test instance"
   vpc_id      = data.aws_vpc.shared.id
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-dms-test"
+    Name = "${var.name_prefix}-oracle-dms-test"
   })
 }
 
@@ -77,7 +77,7 @@ resource "aws_vpc_security_group_egress_rule" "oracle_outbound" {
 # --- Oracle RDS Instance ---
 
 resource "aws_db_instance" "oracle" {
-  identifier = "laa-df-dev-oracle-dms-test"
+  identifier = "${var.name_prefix}-oracle-dms-test"
 
   engine         = "oracle-se2"
   engine_version = "19"
@@ -107,7 +107,7 @@ resource "aws_db_instance" "oracle" {
   apply_immediately       = true
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-dms-test"
+    Name = "${var.name_prefix}-oracle-dms-test"
   })
 }
 
@@ -115,12 +115,12 @@ resource "aws_db_instance" "oracle" {
 
 resource "aws_secretsmanager_secret" "oracle_admin" {
   # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
-  name                    = "laa-df-dev/oracle-dms-test/admin"
+  name                    = "${var.name_prefix}/oracle-dms-test/admin"
   kms_key_id              = aws_kms_key.dms_test.arn
   recovery_window_in_days = 0
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev/oracle-dms-test/admin"
+    Name = "${var.name_prefix}/oracle-dms-test/admin"
   })
 }
 
@@ -140,12 +140,12 @@ resource "aws_secretsmanager_secret_version" "oracle_admin" {
 
 resource "aws_secretsmanager_secret" "oracle_dms_user" {
   # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
-  name                    = "laa-df-dev/oracle-dms-test/dms-user"
+  name                    = "${var.name_prefix}/oracle-dms-test/dms-user"
   kms_key_id              = aws_kms_key.dms_test.arn
   recovery_window_in_days = 0
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev/oracle-dms-test/dms-user"
+    Name = "${var.name_prefix}/oracle-dms-test/dms-user"
   })
 }
 

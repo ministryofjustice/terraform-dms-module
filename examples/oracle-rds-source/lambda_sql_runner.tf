@@ -37,7 +37,7 @@ data "archive_file" "oracledb_layer" {
 resource "aws_lambda_layer_version" "oracledb" {
   filename            = data.archive_file.oracledb_layer.output_path
   source_code_hash    = data.archive_file.oracledb_layer.output_base64sha256
-  layer_name          = "oracledb-thin"
+  layer_name          = "${var.name_prefix}-oracledb-thin"
   compatible_runtimes = ["python3.12"]
 
   depends_on = [data.archive_file.oracledb_layer]
@@ -46,7 +46,7 @@ resource "aws_lambda_layer_version" "oracledb" {
 # --- IAM Role ---
 
 resource "aws_iam_role" "lambda_sql_runner" {
-  name = "laa-df-dev-oracle-sql-runner"
+  name = "${var.name_prefix}-oracle-sql-runner"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -75,12 +75,12 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc" {
 # --- Security Group ---
 
 resource "aws_security_group" "lambda_sql_runner" {
-  name        = "laa-df-dev-oracle-sql-runner"
+  name        = "${var.name_prefix}-oracle-sql-runner"
   description = "Lambda SQL runner - outbound to Oracle RDS"
   vpc_id      = data.aws_vpc.shared.id
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-sql-runner"
+    Name = "${var.name_prefix}-oracle-sql-runner"
   })
 }
 
@@ -101,7 +101,7 @@ resource "aws_lambda_function" "oracle_sql_runner" {
   # checkov:skip=CKV_AWS_272: Code signing not needed for throwaway test Lambda
   # checkov:skip=CKV_AWS_116: DLQ not needed for throwaway test Lambda
   # checkov:skip=CKV_AWS_173: Environment variables don't contain secrets
-  function_name    = "laa-df-dev-oracle-sql-runner"
+  function_name    = "${var.name_prefix}-oracle-sql-runner"
   role             = aws_iam_role.lambda_sql_runner.arn
   handler          = "oracle_sql_runner.handler"
   runtime          = "python3.12"
@@ -117,6 +117,6 @@ resource "aws_lambda_function" "oracle_sql_runner" {
   }
 
   tags = merge(var.tags, {
-    Name = "laa-df-dev-oracle-sql-runner"
+    Name = "${var.name_prefix}-oracle-sql-runner"
   })
 }
