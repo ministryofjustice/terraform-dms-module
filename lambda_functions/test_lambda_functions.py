@@ -263,9 +263,7 @@ def test_validation_handler_builds_metadata_keys_and_executes(
     fv_instance.execute.assert_called_once()
 
 
-def _sqs_event_wrapping_s3(
-    message_id: str, bucket: str, key: str
-) -> dict[str, Any]:
+def _sqs_event_wrapping_s3(message_id: str, bucket: str, key: str) -> dict[str, Any]:
     """Build an SQS-wrapped S3 ObjectCreated event (as Lambda receives it)."""
     s3_event = {
         "Records": [
