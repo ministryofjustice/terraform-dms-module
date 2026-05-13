@@ -263,7 +263,9 @@ def test_validation_handler_builds_metadata_keys_and_executes(
     fv_instance.execute.assert_called_once()
 
 
-def _sqs_event_wrapping_s3(message_id, bucket, key):
+def _sqs_event_wrapping_s3(
+    message_id: str, bucket: str, key: str
+) -> dict[str, Any]:
     """Build an SQS-wrapped S3 ObjectCreated event (as Lambda receives it)."""
     s3_event = {
         "Records": [
@@ -286,7 +288,9 @@ def _sqs_event_wrapping_s3(message_id, bucket, key):
     }
 
 
-def test_validation_handler_unwraps_sqs_message_and_processes(monkeypatch):
+def test_validation_handler_unwraps_sqs_message_and_processes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     s3_client = MagicMock()
     s3_client.get_paginator.return_value = FakePaginator(
         pages=[{"Contents": [{"Key": "metadata/table1.json"}]}]
@@ -308,7 +312,9 @@ def test_validation_handler_unwraps_sqs_message_and_processes(monkeypatch):
     fv_instance.execute.assert_called_once()
 
 
-def test_validation_handler_reports_partial_batch_failure_on_exception(monkeypatch):
+def test_validation_handler_reports_partial_batch_failure_on_exception(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     s3_client = MagicMock()
     s3_client.get_paginator.return_value = FakePaginator(
         pages=[{"Contents": [{"Key": "metadata/table1.json"}]}]
@@ -331,7 +337,9 @@ def test_validation_handler_reports_partial_batch_failure_on_exception(monkeypat
     assert result == {"batchItemFailures": [{"itemIdentifier": "msg-poison"}]}
 
 
-def test_validation_handler_reports_failure_on_malformed_sqs_body(monkeypatch):
+def test_validation_handler_reports_failure_on_malformed_sqs_body(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     s3_client = MagicMock()
     monkeypatch.setattr(validation_mod, "client", s3_client)
 

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+from collections.abc import Iterator
 from datetime import datetime
 from pprint import pformat
 from typing import Any, Optional
@@ -458,7 +459,9 @@ class FileValidator:
                 self._add_error(error=str(e))
 
 
-def _extract_s3_records(event: dict[str, Any]):
+def _extract_s3_records(
+    event: dict[str, Any],
+) -> Iterator[tuple[Optional[str], Optional[dict[str, Any]]]]:
     """Yield (message_id, s3_record) tuples from a Lambda event.
 
     Supports both:
