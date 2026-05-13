@@ -4,11 +4,11 @@ import os
 import re
 from datetime import datetime
 from pprint import pformat
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import unquote_plus
 
 import boto3
-import s3fs
+import s3fs  # type: ignore[import-untyped]
 from aws_xray_sdk.core import patch_all
 from pyarrow import ArrowInvalid
 from pyarrow.parquet import ParquetFile
@@ -44,7 +44,9 @@ type_lookup = {
 }
 
 
-def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool = False):
+def move_object(
+    bucket_to: str, bucket_from: str, key: str, mutable: bool = False
+) -> None:
     """The function will copy the object in S3 to the "bucket_to" bucket,
     while adding a timestamp to the filename. It will then
     delete the original object from "bucket_from".
@@ -108,7 +110,7 @@ def move_object(bucket_to: str, bucket_from: str, key: str, mutable: bool = Fals
 
 
 def strip_data_type(data_type: str) -> str:
-    """Some data types define units within brackets that are asociated with the
+    """Some data types define units within brackets that are associated with the
     properties of that data type. This function will strip brackets and units
     from the given data type.
     Parameters
@@ -198,7 +200,7 @@ class FileValidator:
         fail_bucket: str,
         bucket_from: str,
         parquet_table_name: str,
-        metadata_s3_keys: dict,
+        metadata_s3_keys: dict[str, str],
         metadata_bucket: str,
         valid_files_mutable: bool = False,
     ):
@@ -233,7 +235,7 @@ class FileValidator:
         self.errors: list[str] = []
         self.valid_files_mutable = valid_files_mutable
 
-    def _add_error(self, error: str):
+    def _add_error(self, error: str) -> None:
         """Collects and aggregates error messages into a list.
         Parameters
         ----------
@@ -243,7 +245,7 @@ class FileValidator:
         if error not in self.errors:
             self.errors.append(error)
 
-    def execute(self):
+    def execute(self) -> None:
         """Combines FileValidator methods to validate the file extracted by AWS DMS and
         populates the payload with error messages (if any) before sending to Slack.
         Moves the validated file to to the pass or fail bucket depending on the result
@@ -289,7 +291,9 @@ class FileValidator:
                 self.bucket_to, self.bucket_from, self.key, self.valid_files_mutable
             )
 
-    def _validate_file(self, path, fs=fs, validate_column_attributes: bool = True):
+    def _validate_file(
+        self, path: str, fs: Any = fs, validate_column_attributes: bool = True
+    ) -> None:
         """
         Parameters
         ----------
@@ -304,7 +308,7 @@ class FileValidator:
         open_function = fs.open if fs is not None else open
         with open_function(path, mode="rb") as source:
             try:
-                self.parquet_file = ParquetFile(source=source)
+                self.parquet_file = ParquetFile(source=source)  # type: ignore[no-untyped-call]
             except ArrowInvalid as e:
                 self._add_error(error=str(e))
                 return
@@ -317,10 +321,10 @@ class FileValidator:
 
     def _validate_column_attributes(
         self,
-        parquet_file,
+        parquet_file: ParquetFile,
         validate_column_names: bool = True,
         validate_column_types: bool = True,
-    ):
+    ) -> None:
         """
         Parameters
         ----------
@@ -342,7 +346,7 @@ class FileValidator:
             .read()
             .decode("UTF-8")
         )
-        self.metadata_cols = {}
+        self.metadata_cols: dict[str, str] = {}
         for col in metadata_file["columns"]:
             if col["name"].lower() not in [
                 "mojap_end_datetime",
@@ -353,7 +357,7 @@ class FileValidator:
                 self.metadata_cols[col["name"].lower()] = col["type"].lower()
         self.metadata_cols["extraction_timestamp"] = "character"
 
-        self.parquet_cols = {}
+        self.parquet_cols: dict[str, str] = {}
         for col_name, col_type in zip(
             parquet_file.schema_arrow.names, parquet_file.schema_arrow.types
         ):
@@ -377,9 +381,9 @@ class FileValidator:
 
     def _validate_column_names(
         self,
-        metadata_cols: dict,
-        parquet_cols: dict,
-    ):
+        metadata_cols: dict[str, str],
+        parquet_cols: dict[str, str],
+    ) -> None:
         """
         Parameters
         ----------
@@ -415,9 +419,9 @@ class FileValidator:
 
     def _validate_column_types(
         self,
-        metadata_cols: dict,
-        parquet_cols: dict,
-    ):
+        metadata_cols: dict[str, str],
+        parquet_cols: dict[str, str],
+    ) -> None:
         """
         Parameters
         ----------
@@ -454,7 +458,7 @@ class FileValidator:
                 self._add_error(error=str(e))
 
 
-def handler(event, context):  # noqa: C901 pylint: disable=unused-argument
+def handler(event: dict[str, Any], context: Any) -> None:  # noqa: C901 pylint: disable=unused-argument
     # Get the bucket and key from the event
     record = event["Records"][0]
     bucket_from = record["s3"]["bucket"]["name"]

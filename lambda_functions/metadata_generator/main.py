@@ -5,16 +5,17 @@ import os
 import re
 import sys
 from datetime import datetime
+from typing import Any
 
 import boto3
 import oracledb
 from aws_xray_sdk.core import patch_all, xray_recorder
 from dotenv import load_dotenv
-from mojap_metadata import Metadata
-from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter
-from mojap_metadata.converters.glue_converter import GlueConverter
-from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter
-from sqlalchemy import create_engine
+from mojap_metadata import Metadata  # type: ignore[import-untyped]
+from mojap_metadata.converters.etl_manager_converter import EtlManagerConverter  # type: ignore[import-untyped]
+from mojap_metadata.converters.glue_converter import GlueConverter  # type: ignore[import-untyped]
+from mojap_metadata.converters.sqlalchemy_converter import SQLAlchemyConverter  # type: ignore[import-untyped]
+from sqlalchemy import Engine, create_engine
 import ast
 
 patch_all()
@@ -26,7 +27,7 @@ landing_bucket_name = os.getenv("LANDING_BUCKET")
 dms_mapping_rules_bucket = os.environ.get("DMS_MAPPING_RULES_BUCKET", "")
 dms_mapping_rules_key = os.environ.get("DMS_MAPPING_RULES_KEY", "")
 lambda_bucket_name = os.getenv("LAMBDA_BUCKET")
-metadata_bucket = os.getenv("METADATA_BUCKET")
+metadata_bucket = os.environ["METADATA_BUCKET"]
 db_secret_arn = os.getenv("DB_SECRET_ARN")
 retry_failed_after_recreate_metadata = (
     os.getenv("RETRY_FAILED_AFTER_RECREATE_METADATA", "true").lower() == "true"
@@ -36,7 +37,7 @@ glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
 os.environ["AWS_STS_REGIONAL_ENDPOINTS"] = "regional"
 
 
-def _get_glue_client():
+def _get_glue_client() -> Any:
     """
     Return a glue client with an appropriate role
     """
@@ -64,15 +65,15 @@ log_level = os.getenv("LOG_LEVEL", "INFO")
 logger.setLevel(log_level)
 
 
-def _get_secretmanager():
+def _get_secretmanager() -> Any:
     return boto3.client("secretsmanager")
 
 
-def _get_s3():
+def _get_s3() -> Any:
     return boto3.client("s3")
 
 
-oracledb.version = "8.3.0"
+oracledb.version = "8.3.0"  # type: ignore[assignment]
 sys.modules["cx_Oracle"] = oracledb
 load_dotenv()
 
@@ -137,7 +138,7 @@ class MetadataExtractor:
     + extract table partitions_
     """
 
-    def __init__(self, db_options, engine):
+    def __init__(self, db_options: dict[str, Any], engine: Engine) -> None:
         self.source_database = db_options["database"]
         self.database_identifier = db_options["identifier"]
         self.schema_name = db_options["schema"].lower()
@@ -164,7 +165,7 @@ class MetadataExtractor:
         logger.info("Excluded columns loaded as %s", self.excluded_columns_by_object)
         self.emc = EtlManagerConverter()
         self.sqlc = SQLAlchemyConverter(engine)
-        self.blobs = []
+        self.blobs: list[dict[str, str]] = []
         self.upper_case_dialects = ["oracle"]
 
     def _manage_blob_columns(self, metadata: Metadata) -> Metadata:
@@ -257,7 +258,7 @@ class MetadataExtractor:
 
         return metadata
 
-    def convert_metadata(self, metadata: Metadata):
+    def convert_metadata(self, metadata: Metadata) -> str:
         logger.info("Converting metadata: %s", metadata)
         metadata.file_format = "parquet"
         etlmeta = self.emc.generate_from_meta(metadata=metadata)
@@ -267,7 +268,7 @@ class MetadataExtractor:
         etl_dict["partitions"] = None
         return json.dumps(etl_dict)
 
-    def get_table_metadata(self, schema, table) -> Metadata:
+    def get_table_metadata(self, schema: str, table: str) -> Metadata:
         try:
             table_meta = self.sqlc.generate_to_meta(table.lower(), schema)
         except Exception as e:
@@ -284,8 +285,8 @@ class MetadataExtractor:
 
         return table_meta
 
-    def _write_database_objects(self, bucket):
-        database_objects = {
+    def _write_database_objects(self, bucket: str) -> None:
+        database_objects: dict[str, Any] = {
             "objects_from": self.database_identifier,
             "extraction_date": datetime.now().isoformat(),
             "objects": sorted(self.objects),
@@ -300,7 +301,7 @@ class MetadataExtractor:
             Key="objects.json",
         )
 
-    def get_schema_and_table_from_object(self, obj_str: str) -> "tuple[str, str]":
+    def get_schema_and_table_from_object(self, obj_str: str) -> tuple[str, str]:
         """get_table_specific_schema.
 
         :param object: database object string in format `table` or `schema.table`
@@ -311,7 +312,7 @@ class MetadataExtractor:
         logger.info("Extracting schema (if exists) and table from %s", obj_str)
         object_list = obj_str.split(".")
         if len(object_list) == 2:
-            return tuple(object_list)
+            return (object_list[0], object_list[1])
         elif len(object_list) == 1:
             return self.schema_name, object_list[0]
         else:
@@ -319,7 +320,7 @@ class MetadataExtractor:
                 f"Expected object to be of format `table` or `schema.table` but got {obj_str}"
             )
 
-    def get_database_metadata(self, output_bucket):
+    def get_database_metadata(self, output_bucket: str) -> list[Metadata]:
         tables = [
             self.get_table_metadata(*self.get_schema_and_table_from_object(obj))
             for obj in self.objects
@@ -328,7 +329,7 @@ class MetadataExtractor:
         return tables
 
 
-def handler(event, context):  # pylint: disable=unused-argument
+def handler(event: dict[str, Any], context: Any) -> None:
     secretsmanager = _get_secretmanager()
     glue = _get_glue_client()
     db_secret_response = secretsmanager.get_secret_value(SecretId=db_secret_arn)
@@ -383,11 +384,14 @@ def handler(event, context):  # pylint: disable=unused-argument
         glue_kwargs = {}
         if glue_catalog_arn:
             # Get account name from glue catalog arn to use as catalogId
-            catalogId = re.match(
-                r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn
-            ).groups()
-            assert len(catalogId) == 1
-            glue_kwargs["CatalogId"] = catalogId[0]
+            match = re.match(r"^arn:aws:glue:[\w-]+:(\d+):catalog", glue_catalog_arn)
+            if match:
+                catalogId = match.groups()
+                if len(catalogId) != 1:
+                    raise ValueError(
+                        f"Expected exactly one account ID in glue_catalog_arn, got {len(catalogId)}"
+                    )
+                glue_kwargs["CatalogId"] = catalogId[0]
         try:
             glue.get_database(Name=db_identifier, **glue_kwargs)
             logger.info(f"Database {db_identifier} already exists in Glue Catalog")
@@ -478,7 +482,7 @@ def handler(event, context):  # pylint: disable=unused-argument
         reprocess_failed_records()
 
 
-def reprocess_failed_records():
+def reprocess_failed_records() -> None:
     logger.info("Reprocessing failed records")
     s3 = _get_s3()
     list_invalid_bucket = s3.list_objects_v2(Bucket=invalid_bucket_name)

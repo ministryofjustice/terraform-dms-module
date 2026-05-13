@@ -1,14 +1,21 @@
+---
 version: 2
 updates:
   - package-ecosystem: "terraform"
-    directory: "/terraform"
+    directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "gomod"
-    directory: "/test"
-    schedule:
-      interval: "daily"
+    cooldown:
+      default-days: 7
+      exclude:
+        - "ministryofjustice/data-engineering-github-actions*"
+    groups:
+      data-engineering-github-actions:
+        patterns:
+          - "ministryofjustice/data-engineering-github-actions*"
