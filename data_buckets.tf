@@ -93,23 +93,19 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "landing" {
   }
 }
 
-# Lambda permission to allow landing bucket to invoke validation lambda
-resource "aws_lambda_permission" "allow_landing_bucket_to_invoke_lambda" {
-  statement_id  = "AllowExecutionFromS3Bucket"
-  action        = "lambda:InvokeFunction"
-  function_name = module.validation_lambda_function.lambda_function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.landing.arn
-}
-
-# S3 bucket notification to trigger validation lambda
+# S3 bucket notification to enqueue object-created events for the
+# validation Lambda. Using SQS in front of Lambda gives us configurable
+# retry, backpressure during DMS bursts, a DLQ for poison messages, and
+# the ability to redrive after fixing root causes.
 resource "aws_s3_bucket_notification" "landing" {
   bucket = aws_s3_bucket.landing.bucket
 
-  lambda_function {
-    lambda_function_arn = module.validation_lambda_function.lambda_function_arn
-    events              = ["s3:ObjectCreated:*"]
+  queue {
+    queue_arn = aws_sqs_queue.validation.arn
+    events    = ["s3:ObjectCreated:*"]
   }
+
+  depends_on = [aws_sqs_queue_policy.validation]
 }
 
 # Bucket to store validated data
