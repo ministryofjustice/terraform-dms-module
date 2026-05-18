@@ -141,6 +141,16 @@ data "aws_iam_policy_document" "validation_lambda_sqs" {
 
     resources = [aws_sqs_queue.validation.arn]
   }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "kms:Decrypt",
+    ]
+
+    resources = [aws_kms_key.validation_sqs.arn]
+  }
 }
 
 resource "aws_iam_role_policy" "validation_lambda_sqs" {
