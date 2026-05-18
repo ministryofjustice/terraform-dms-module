@@ -105,7 +105,10 @@ resource "aws_s3_bucket_notification" "landing" {
     events    = ["s3:ObjectCreated:*"]
   }
 
-  depends_on = [aws_sqs_queue_policy.validation]
+  depends_on = [
+    aws_sqs_queue_policy.validation,
+    aws_kms_key.validation_sqs,
+  ]
 }
 
 # Bucket to store validated data
