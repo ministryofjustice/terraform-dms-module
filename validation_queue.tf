@@ -61,6 +61,22 @@ data "aws_iam_policy_document" "validation_sqs_kms" {
       values   = [aws_s3_bucket.landing.arn]
     }
   }
+
+  statement {
+    sid    = "AllowValidationLambdaToDecryptQueueMessages"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = [module.validation_lambda_function.lambda_role_arn]
+    }
+
+    actions = [
+      "kms:Decrypt",
+    ]
+
+    resources = ["*"]
+  }
 }
 
 # Dead-letter queue for messages that fail processing repeatedly.
