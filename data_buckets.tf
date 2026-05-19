@@ -107,7 +107,6 @@ resource "aws_s3_bucket_notification" "landing" {
 
   depends_on = [
     aws_sqs_queue_policy.validation,
-    aws_kms_key.validation_sqs,
   ]
 }
 
