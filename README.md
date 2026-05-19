@@ -55,6 +55,7 @@ module "test_dms_implementation" {
 
   db                      = aws_db_instance.dms_test.identifier
   slack_webhook_secret_id = aws_secretsmanager_secret.slack_webhook.id
+  validation_sqs_kms_key_arn = module.dms_test_kms.key_arn
   dms_replication_instance = {
     replication_instance_id    = "test-dms"
     subnet_ids                 = module.vpc.private_subnets
