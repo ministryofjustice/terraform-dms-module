@@ -58,6 +58,11 @@ variable "dms_source" {
   EOF
 }
 
+variable "validation_sqs_kms_key_arn" {
+  type        = string
+  description = "ARN of the customer-managed KMS key used to encrypt the validation SQS queues."
+}
+
 variable "output_bucket" {
   type        = string
   default     = ""
