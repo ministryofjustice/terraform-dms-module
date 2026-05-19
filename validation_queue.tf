@@ -2,83 +2,6 @@ locals {
   validation_queue_name = "${var.db}-validation"
 }
 
-# Customer-managed KMS key for the validation SQS queues.
-# S3 bucket notifications cannot reliably publish to queues encrypted with
-# alias/aws/sqs because the AWS-managed key policy cannot be updated to allow
-# the s3.amazonaws.com service principal.
-resource "aws_kms_key" "validation_sqs" {
-  description         = "KMS key for ${local.validation_queue_name} SQS queues"
-  enable_key_rotation = true
-  policy              = data.aws_iam_policy_document.validation_sqs_kms.json
-
-  tags = var.tags
-}
-
-resource "aws_kms_alias" "validation_sqs" {
-  name          = "alias/${local.validation_queue_name}-sqs"
-  target_key_id = aws_kms_key.validation_sqs.key_id
-}
-
-data "aws_iam_policy_document" "validation_sqs_kms" {
-  statement {
-    sid    = "AllowAccountRootFullAccess"
-    effect = "Allow"
-
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
-    }
-
-    actions   = ["kms:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid    = "AllowS3ToUseKeyForQueueNotifications"
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["s3.amazonaws.com"]
-    }
-
-    actions = [
-      "kms:GenerateDataKey",
-      "kms:Decrypt",
-    ]
-
-    resources = ["*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [data.aws_caller_identity.current.account_id]
-    }
-
-    condition {
-      test     = "ArnEquals"
-      variable = "aws:SourceArn"
-      values   = [aws_s3_bucket.landing.arn]
-    }
-  }
-
-  statement {
-    sid    = "AllowValidationLambdaToDecryptQueueMessages"
-    effect = "Allow"
-
-    principals {
-      type        = "AWS"
-      identifiers = [module.validation_lambda_function.lambda_role_arn]
-    }
-
-    actions = [
-      "kms:Decrypt",
-    ]
-
-    resources = ["*"]
-  }
-}
-
 # Dead-letter queue for messages that fail processing repeatedly.
 # DMS landing events that fail validation Lambda processing will land here
 # after the configured maxReceiveCount, allowing redrive once the underlying
@@ -86,7 +9,7 @@ data "aws_iam_policy_document" "validation_sqs_kms" {
 resource "aws_sqs_queue" "validation_dlq" {
   name                              = "${local.validation_queue_name}-dlq"
   message_retention_seconds         = 1209600 # 14 days (max)
-  kms_master_key_id                 = aws_kms_key.validation_sqs.arn
+  kms_master_key_id                 = var.validation_sqs_kms_key_arn
   kms_data_key_reuse_period_seconds = 300
 
   tags = var.tags
@@ -99,7 +22,7 @@ resource "aws_sqs_queue" "validation" {
   name                              = local.validation_queue_name
   visibility_timeout_seconds        = 360    # 6x Lambda timeout (60s) per AWS guidance
   message_retention_seconds         = 345600 # 4 days
-  kms_master_key_id                 = aws_kms_key.validation_sqs.arn
+  kms_master_key_id                 = var.validation_sqs_kms_key_arn
   kms_data_key_reuse_period_seconds = 300
 
   redrive_policy = jsonencode({
@@ -165,7 +88,7 @@ data "aws_iam_policy_document" "validation_lambda_sqs" {
       "kms:Decrypt",
     ]
 
-    resources = [aws_kms_key.validation_sqs.arn]
+    resources = [var.validation_sqs_kms_key_arn]
   }
 }
 
