@@ -89,6 +89,18 @@ data "aws_iam_policy_document" "validation_lambda_sqs" {
     ]
 
     resources = [var.validation_sqs_kms_key_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["sqs.${data.aws_region.current.name}.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:CallerAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
   }
 }
 
