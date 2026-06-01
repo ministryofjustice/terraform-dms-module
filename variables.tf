@@ -58,6 +58,15 @@ variable "dms_source" {
   EOF
 }
 
+variable "validation_sqs_kms_key_arn" {
+  type        = string
+  description = <<EOF
+    ARN of the customer-managed KMS key used to encrypt the validation SQS queues.
+    If the queues receive S3 event notifications, ensure the CMK policy grants the required permissions for S3 to use the key via SQS (for example, allowing the `s3.amazonaws.com` service principal to use the key subject to appropriate conditions).
+    Without these grants, Terraform may apply successfully but S3 -> SQS notifications can fail at runtime with KMS access errors.
+  EOF
+}
+
 variable "output_bucket" {
   type        = string
   default     = ""

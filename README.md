@@ -135,6 +135,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_slack_webhook_secret_id"></a> [slack\_webhook\_secret\_id](#input\_slack\_webhook\_secret\_id) | Webhook used to send DMS alerts | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | tags for the module | `map(string)` | n/a | yes |
 | <a name="input_valid_files_mutable"></a> [valid\_files\_mutable](#input\_valid\_files\_mutable) | If false, copy valid files to their destination bucket with a datetime infix | `bool` | `false` | no |
+| <a name="input_validation_sqs_kms_key_arn"></a> [validation\_sqs\_kms\_key\_arn](#input\_validation\_sqs\_kms\_key\_arn) | ARN of the customer-managed KMS key used to encrypt the validation SQS queues.<br/>    If the queues receive S3 event notifications, ensure the CMK policy grants the required permissions for S3 to use the key via SQS (for example, allowing the `s3.amazonaws.com` service principal to use the key subject to appropriate conditions).<br/>    Without these grants, Terraform may apply successfully but S3 -> SQS notifications can fail at runtime with KMS access errors. | `string` | n/a | yes |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC ID | `string` | n/a | yes |
 | <a name="input_write_metadata_to_glue_catalog"></a> [write\_metadata\_to\_glue\_catalog](#input\_write\_metadata\_to\_glue\_catalog) | Whether to write metadata to glue catalog | `bool` | `true` | no |
 
@@ -165,6 +166,7 @@ This will be used to select the tables to be migrated.
 | [aws_cloudwatch_event_target.eventbridge_dms_instance_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_cloudwatch_log_group.eventbridge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_cloudwatch_log_resource_policy.eventbridge](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_resource_policy) | resource |
+| [aws_cloudwatch_metric_alarm.validation_dlq_depth](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_dms_endpoint.source](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_endpoint) | resource |
 | [aws_dms_replication_instance.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_replication_instance) | resource |
 | [aws_dms_replication_subnet_group.replication_subnet_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dms_replication_subnet_group) | resource |
@@ -180,9 +182,10 @@ This will be used to select the tables to be migrated.
 | [aws_iam_role_policy.dms_premigration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.eventbridge_cloudwatch_publish](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.eventbridge_sns_publish](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.validation_lambda_sqs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.dms-cloudwatch-logs-role-AmazonDMSCloudWatchLogsRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.dms-vpc-role-AmazonDMSVPCManagementRole](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_lambda_permission.allow_landing_bucket_to_invoke_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission) | resource |
+| [aws_lambda_event_source_mapping.validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_event_source_mapping) | resource |
 | [aws_s3_bucket.invalid](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.landing](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
@@ -218,5 +221,8 @@ This will be used to select the tables to be migrated.
 | [aws_sns_topic.dms_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
 | [aws_sns_topic_policy.dms_events](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 | [aws_sns_topic_subscription.slack](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_subscription) | resource |
+| [aws_sqs_queue.validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue) | resource |
+| [aws_sqs_queue.validation_dlq](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue) | resource |
+| [aws_sqs_queue_policy.validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue_policy) | resource |
 | [aws_vpc_security_group_egress_rule.replication_instance_outbound](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 <!-- END_TF_DOCS -->
