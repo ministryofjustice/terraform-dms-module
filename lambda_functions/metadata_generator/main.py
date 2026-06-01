@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Any
 
 import boto3
-import oracledb
 from aws_xray_sdk.core import patch_all, xray_recorder
 from dotenv import load_dotenv
 from mojap_metadata import Metadata  # type: ignore[import-untyped]
@@ -73,9 +72,14 @@ def _get_s3() -> Any:
     return boto3.client("s3")
 
 
-oracledb.version = "8.3.0"  # type: ignore[assignment]
-sys.modules["cx_Oracle"] = oracledb
 load_dotenv()
+
+# Oracle driver shim — only loaded when engine is oracle
+_engine_type = os.getenv("ENGINE", "oracle")
+if _engine_type == "oracle":
+    import oracledb
+    oracledb.version = "8.3.0"  # type: ignore[assignment]
+    sys.modules["cx_Oracle"] = oracledb
 
 extraction_columns = [
     {
@@ -190,6 +194,10 @@ class MetadataExtractor:
         return metadata
 
     def _convert_int_columns(self, metadata: Metadata) -> Metadata:
+        """Oracle stores all integers as NUMERIC — convert int to decimal128.
+        Skip for Postgres which has native integer types."""
+        if self.dialect not in self.upper_case_dialects:
+            return metadata
         logger.info("Converting int columns for metadata: %s", metadata)
         for column_name in metadata.column_names:
             if metadata.get_column(column_name)["type"].startswith("int"):
@@ -337,25 +345,26 @@ def handler(event: dict[str, Any], context: Any) -> None:
 
     db_identifier = db_secret["dbInstanceIdentifier"]
     username = db_secret["username"]
-    password = db_secret["oracle_password"]
-    engine = db_secret.get("engine", os.getenv("ENGINE"))
+    engine_type = db_secret.get("engine", os.getenv("ENGINE"))
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
 
-    # TODO: Works for oracle databases. Need to add support for other databases
-    port = "1521"
-    dsn = f"{host}:{port}/?service_name={db_name}"
-
-    db_string = f"{engine}://{username}:{password}@{dsn}"
-    engine = create_engine(
-        db_string,
-        connect_args={
-            # this becomes USERENV('MODULE') and USERENV('CLIENT_INFO')
+    if engine_type == "oracle":
+        password = db_secret["oracle_password"]
+        port = "1521"
+        dsn = f"{host}:{port}/?service_name={db_name}"
+        db_string = f"oracle://{username}:{password}@{dsn}"
+        connect_args: dict[str, Any] = {
             "program": "repctl",
-            # this becomes USERENV('OS_USER')
             "osuser": "rdsdb",
-        },
-    )
+        }
+    else:
+        password = db_secret["password"]
+        port = db_secret.get("port", 5432)
+        db_string = f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
+        connect_args = {}
+
+    engine = create_engine(db_string, connect_args=connect_args)
     s3 = _get_s3()
     response = s3.get_object(Bucket=dms_mapping_rules_bucket, Key=dms_mapping_rules_key)
     dms_mapping_rules = json.loads(
@@ -421,7 +430,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
         gc.generate_from_meta(
             table,
             db_identifier,
-            f"s3://{raw_history_bucket}/{output_key_prefix}/{schema}/{table.name.upper()}",
+            f"s3://{raw_history_bucket}/{output_key_prefix}/{schema}/{table.name.upper() if engine_type == 'oracle' else table.name}",
         )
         for table in db_metadata
     ]
