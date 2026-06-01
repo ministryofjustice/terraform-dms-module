@@ -47,7 +47,8 @@ Useful outputs:
 
 - `oracle_endpoint`, `oracle_port`, `oracle_db_name`
 - `oracle_admin_secret_arn`, `oracle_dms_user_secret_arn`
-- `sql_runner_lambda_name` — invoke with a `{"sql": "..."}` payload
+- `sql_runner_lambda_name` — invoke with a payload like
+  `{"host":"...","port":1521,"service_name":"...","username":"...","password":"...","sql_statements":["SELECT 1 FROM dual"]}`
 
 ## Tearing down
 
