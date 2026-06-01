@@ -100,6 +100,7 @@ resource "aws_db_instance" "postgres" {
 }
 
 resource "aws_secretsmanager_secret" "postgres_admin" {
+  # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
   name                    = "${var.name_prefix}/admin"
   kms_key_id              = aws_kms_key.dms_test.arn
   recovery_window_in_days = 0
