@@ -111,5 +111,7 @@ resource "aws_lambda_function" "postgres_sql_runner" {
     aws_iam_role_policy_attachment.postgres_sql_runner_vpc,
   ]
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-sql-runner"
+  })
 }
