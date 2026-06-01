@@ -50,8 +50,7 @@ def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
                         if cursor.description:
                             columns = [col.name for col in cursor.description]
                             rows = [
-                                dict(zip(columns, row))
-                                for row in cursor.fetchmany(100)
+                                dict(zip(columns, row)) for row in cursor.fetchmany(100)
                             ]
                             results.append(
                                 {
