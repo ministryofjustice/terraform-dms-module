@@ -125,10 +125,11 @@ resource "aws_secretsmanager_secret_version" "postgres_admin" {
 }
 
 resource "aws_secretsmanager_secret" "postgres_dms_user" {
+  # checkov:skip=CKV2_AWS_57: Automatic rotation not needed for throwaway test instance
+  # NOTE: This Terraform example does not create the `dms_user` role; create it manually (or via the SQL runner) before using these credentials.
   name                    = "${var.name_prefix}/dms-user"
   kms_key_id              = aws_kms_key.dms_test.arn
   recovery_window_in_days = 0
-
   tags = merge(var.tags, {
     Name = "${var.name_prefix}/dms-user"
   })
