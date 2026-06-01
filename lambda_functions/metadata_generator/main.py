@@ -78,6 +78,7 @@ load_dotenv()
 _engine_type = os.getenv("ENGINE", "oracle")
 if _engine_type == "oracle":
     import oracledb
+
     oracledb.version = "8.3.0"  # type: ignore[assignment]
     sys.modules["cx_Oracle"] = oracledb
 
