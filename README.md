@@ -135,7 +135,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_slack_webhook_secret_id"></a> [slack\_webhook\_secret\_id](#input\_slack\_webhook\_secret\_id) | Webhook used to send DMS alerts | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | tags for the module | `map(string)` | n/a | yes |
 | <a name="input_valid_files_mutable"></a> [valid\_files\_mutable](#input\_valid\_files\_mutable) | If false, copy valid files to their destination bucket with a datetime infix | `bool` | `false` | no |
-| <a name="input_validation_sqs_kms_key_arn"></a> [validation\_sqs\_kms\_key\_arn](#input\_validation\_sqs\_kms\_key\_arn) | ARN of the customer-managed KMS key used to encrypt the validation SQS queues. | `string` | n/a | yes |
+| <a name="input_validation_sqs_kms_key_arn"></a> [validation\_sqs\_kms\_key\_arn](#input\_validation\_sqs\_kms\_key\_arn) | ARN of the customer-managed KMS key used to encrypt the validation SQS queues.<br/>    If the queues receive S3 event notifications, ensure the CMK policy grants the required permissions for S3 to use the key via SQS (for example, allowing the `s3.amazonaws.com` service principal to use the key subject to appropriate conditions).<br/>    Without these grants, Terraform may apply successfully but S3 -> SQS notifications can fail at runtime with KMS access errors. | `string` | n/a | yes |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | The VPC ID | `string` | n/a | yes |
 | <a name="input_write_metadata_to_glue_catalog"></a> [write\_metadata\_to\_glue\_catalog](#input\_write\_metadata\_to\_glue\_catalog) | Whether to write metadata to glue catalog | `bool` | `true` | no |
 
