@@ -88,6 +88,9 @@ data "archive_file" "postgres_sql_runner" {
 }
 
 resource "aws_lambda_function" "postgres_sql_runner" {
+  # checkov:skip=CKV_AWS_272: Code signing not needed for throwaway test Lambda
+  # checkov:skip=CKV_AWS_116: DLQ not needed for throwaway test Lambda
+  # checkov:skip=CKV_AWS_173: Environment variables don't contain secrets
   function_name = "${var.name_prefix}-sql-runner"
   role          = aws_iam_role.postgres_sql_runner.arn
   handler       = "postgres_sql_runner.handler"
