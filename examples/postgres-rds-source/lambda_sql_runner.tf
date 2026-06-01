@@ -72,7 +72,7 @@ resource "null_resource" "postgres_sql_runner_package" {
       rm -rf ${local.postgres_sql_runner_build_dir} ${local.postgres_sql_runner_zip}
       mkdir -p ${local.postgres_sql_runner_build_dir}
       cp ${path.module}/lambda/postgres_sql_runner.py ${local.postgres_sql_runner_build_dir}/
-      python3 -m pip install --platform manylinux2014_x86_64 --implementation cp --python-version 3.12 --only-binary=:all: --target ${local.postgres_sql_runner_build_dir} "psycopg[binary]==3.2.3"
+      python3 -m pip install --platform manylinux2014_x86_64 --implementation cp --python-version 3.12 --only-binary=:all: --target ${local.postgres_sql_runner_build_dir} "psycopg[binary]==3.2.3" "typing_extensions"
     EOT
   }
 }
