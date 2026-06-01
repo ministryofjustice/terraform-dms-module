@@ -7,7 +7,7 @@
 import json
 from typing import Any
 
-import psycopg
+import psycopg  # type: ignore[import-not-found]
 
 
 def handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
