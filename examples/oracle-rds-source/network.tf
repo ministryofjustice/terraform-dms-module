@@ -16,8 +16,10 @@ data "aws_subnets" "data" {
     name   = "vpc-id"
     values = [data.aws_vpc.shared.id]
   }
-  tags = {
-    Name = "laa-development-general-data-*"
+
+  filter {
+    name   = "tag:Name"
+    values = ["laa-development-general-data-*"]
   }
 }
 
