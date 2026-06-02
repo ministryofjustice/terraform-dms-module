@@ -54,8 +54,11 @@ variable "dms_source" {
   }
 
   validation {
-    condition     = var.dms_source.sid != null || var.dms_source.database_name != null
-    error_message = "Either 'sid' (Oracle) or 'database_name' (Postgres) must be set."
+    condition = (
+      (var.dms_source.engine_name == "oracle" && var.dms_source.sid != null) ||
+      (var.dms_source.engine_name == "postgres" && var.dms_source.database_name != null)
+    )
+    error_message = "For engine_name 'oracle' set 'sid'. For engine_name 'postgres' set 'database_name'."
   }
 
   description = <<EOF
