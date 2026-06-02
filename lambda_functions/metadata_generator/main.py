@@ -282,6 +282,7 @@ class MetadataExtractor:
             table_meta = self.sqlc.generate_to_meta(table.lower(), schema)
         except Exception as e:
             logger.error(f"Error getting table description for {table}: {e}")
+            raise
 
         logger.info("Primary key of %s.%s is %s", schema, table, table_meta.primary_key)
 
