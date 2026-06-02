@@ -42,6 +42,10 @@ type_lookup = {
     "decimal": "decimal",
     "int": "decimal",
     "binary": "binary",
+    "date": "datetime",
+    "double": "decimal",
+    "float": "decimal",
+    "long": "decimal",
 }
 
 
