@@ -386,7 +386,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
         "schema": schema,
         "objects": db_objects,
         "include_derived_columns": True,
-        "dialect": engine,
+        "dialect": engine_type,
         "path_to_dms_mapping_rules": dms_mapping_rules_key,
     }
 
