@@ -35,6 +35,7 @@ resource "aws_dms_s3_endpoint" "s3_target" {
   encoding_type                    = "rle-dictionary"
   encryption_mode                  = "SSE_S3"
   include_op_for_full_load         = true
+  map_boolean_as_boolean           = true
   parquet_timestamp_in_millisecond = true
   parquet_version                  = "parquet-2-0"
   timestamp_column_name            = var.s3_target_config.timestamp_column_name
