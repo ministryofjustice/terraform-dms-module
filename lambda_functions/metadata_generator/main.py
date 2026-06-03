@@ -207,6 +207,19 @@ class MetadataExtractor:
                 metadata.update_column(column_int)
         return metadata
 
+    def _convert_boolean_columns(self, metadata: Metadata) -> Metadata:
+        """DMS writes Postgres boolean columns as strings in Parquet.
+        Convert boolean to string so metadata matches actual output."""
+        if self.dialect in self.upper_case_dialects:
+            return metadata
+        logger.info("Converting boolean columns to string for metadata: %s", metadata)
+        for column_name in metadata.column_names:
+            col = metadata.get_column(column_name)
+            if col["type"] == "boolean":
+                col["type"] = "string"
+                metadata.update_column(col)
+        return metadata
+
     def _rename_materialised_view(self, metadata: Metadata) -> Metadata:
         logger.info("Renaming materialised view for metadata: %s", metadata)
         if metadata.name.lower().endswith("_mv"):
@@ -288,6 +301,7 @@ class MetadataExtractor:
 
         table_meta = self._manage_blob_columns(table_meta)
         table_meta = self._convert_int_columns(table_meta)
+        table_meta = self._convert_boolean_columns(table_meta)
         table_meta = self._rename_materialised_view(table_meta)
         table_meta = self._add_reference_columns(table_meta)
         table_meta = self._process_exclusions(table_meta, schema, table)
