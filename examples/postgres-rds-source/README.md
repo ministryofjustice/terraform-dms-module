@@ -57,11 +57,11 @@ The function returns an array of per-statement results.
 ## Create DMS user
 
 After provisioning the RDS instance, create the `dms_user` role via the Lambda console
-(Lambda → Functions → `laa-df-dev-postgres-dms-test-sql-runner` → Test):
+(Lambda → Functions → `<name_prefix>-sql-runner` → Test):
 
 ~~~json
 {
-  "host": "laa-df-dev-postgres-dms-test.cp002qoywony.eu-west-2.rds.amazonaws.com",
+  "host": "<rds_endpoint_from_terraform_output>",
   "port": 5432,
   "user": "postgres_admin",
   "password": "<ADMIN_PASSWORD_FROM_SECRETS_MANAGER>",
@@ -81,7 +81,7 @@ Create tables and insert test data covering key Postgres types (JSONB, TIMESTAMP
 
 ~~~json
 {
-  "host": "laa-df-dev-postgres-dms-test.cp002qoywony.eu-west-2.rds.amazonaws.com",
+  "host": "<rds_endpoint_from_terraform_output>",
   "port": 5432,
   "user": "postgres_admin",
   "password": "<ADMIN_PASSWORD_FROM_SECRETS_MANAGER>",

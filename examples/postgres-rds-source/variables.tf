@@ -1,11 +1,11 @@
 variable "name_prefix" {
   type        = string
-  default     = "laa-df-dev-postgres-dms-test"
+  default     = "postgres-dms-example"
   description = <<-EOT
     Prefix applied to all named resources such as RDS, Secrets Manager secrets,
     IAM roles, KMS alias, Lambda and security groups. Set this to a per-user
-    value, for example "laa-df-dev-postgres-dms-test-sb", if multiple developers
-    need to run this example concurrently in the same AWS account.
+    value, for example "postgres-dms-example-sb", if multiple developers need
+    to run this example concurrently in the same AWS account.
   EOT
 
   validation {
@@ -18,14 +18,14 @@ variable "tags" {
   type = map(string)
 
   default = {
-    application                      = "data-factory-laa"
-    business-unit                    = "LAA"
-    infrastructure-support           = "LAA-Data-Engineering@justice.gov.uk"
-    owner                            = "laa-data-factory"
+    application                      = "my-application"
+    business-unit                    = "my-business-unit"
+    infrastructure-support           = "team@example.com"
+    owner                            = "my-team"
     environment                      = "dev"
     purpose                          = "dms-postgres-testing-throwaway"
-    ticket                           = "LDF-117"
-    slack-channel                    = "laa_data_engineering"
+    ticket                           = "TICKET-123"
+    slack-channel                    = "my-team"
     critical-national-infrastructure = "false"
   }
 

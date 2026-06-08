@@ -1,1 +1,1 @@
-name_prefix = "laa-df-dev-postgres-dms-test"
+name_prefix = "postgres-dms-example"
