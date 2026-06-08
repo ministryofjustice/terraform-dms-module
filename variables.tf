@@ -190,3 +190,26 @@ variable "independent_full_loads" {
   default     = {}
   description = "A list of full load tasks to be set up for tables existing in the upstream database but not downstream, including the name of the task (excluding the database name and 'full-load') and the bucket and object reference within it where the table mapping json file for the task exists"
 }
+
+variable "lakeformation_grants" {
+  type = object({
+    database_name           = optional(string)
+    principals              = list(string)
+    permissions             = optional(list(string), ["SELECT", "DESCRIBE"])
+    grant_database_describe = optional(bool, true)
+  })
+  default     = null
+  description = <<-EOT
+    Optional Lake Formation grants for the Glue database/tables created by the metadata generator.
+    Athena engine v3 enforces explicit LF grants even for LF admins, so without this, queries can
+    fail with COLUMN_NOT_FOUND. Set to null (default) to skip and manage grants externally.
+
+    Fields:
+      database_name           : Glue database to grant on. Defaults to the dbInstanceIdentifier
+                                in the source secret (matches what the metadata generator creates).
+      principals              : List of IAM principal ARNs (roles/users) to grant to.
+      permissions             : Table permissions to grant (default ["SELECT", "DESCRIBE"]).
+      grant_database_describe : Also grant DESCRIBE on the database itself (default true) so the
+                                principal can see the DB in Glue/Athena.
+  EOT
+}

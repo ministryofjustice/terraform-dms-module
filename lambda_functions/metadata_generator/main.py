@@ -228,7 +228,7 @@ class MetadataExtractor:
         logger.info("Converting boolean columns to string for metadata: %s", metadata)
         for column_name in metadata.column_names:
             col = metadata.get_column(column_name)
-            if col["type"] == "boolean":
+            if col["type"] in ("bool", "boolean"):
                 col["type"] = "string"
                 metadata.update_column(col)
         return metadata
