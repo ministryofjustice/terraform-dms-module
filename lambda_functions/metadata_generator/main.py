@@ -82,13 +82,26 @@ if _engine_type == "oracle":
     oracledb.version = "8.3.0"  # type: ignore[assignment]
     sys.modules["cx_Oracle"] = oracledb
 
-extraction_columns = [
-    {
+# Oracle exposes the source commit position as SCN (System Change Number);
+# Postgres (and other engines) use a generic STREAM_POSITION name. The metadata
+# column name must match what the DMS task transformation rule adds.
+if _engine_type == "oracle":
+    _position_column = {
         "name": "scn",
         "type": "string",
         "description": "Oracle system change number",
         "nullable": True,
-    },
+    }
+else:
+    _position_column = {
+        "name": "stream_position",
+        "type": "string",
+        "description": "DMS source stream position (e.g. Postgres LSN)",
+        "nullable": True,
+    }
+
+extraction_columns = [
+    _position_column,
     {
         "name": "extraction_timestamp",
         "type": "string",
