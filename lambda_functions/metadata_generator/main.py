@@ -474,7 +474,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
             table["TableInput"]["Parameters"].update(
                 {
                     "source_primary_key": primary_key_list,
-                    "extraction_key": "extraction_timestamp, scn",
+                    "extraction_key": f"extraction_timestamp, {_position_column['name']}",
                     "extraction_timestamp_column_name": "extraction_timestamp",
                     "extraction_operation_column_name": "op",
                 }
