@@ -67,6 +67,21 @@ content: |-
   }
   ```
 
+  ## Source commit-position column
+
+  Every replicated row is augmented with a column carrying the source DB's
+  commit position (DMS task header `$AR_H_STREAM_POSITION`). The column name
+  is engine-specific so it matches the source's native terminology:
+
+  | `dms_source.engine_name` | Column name      | Meaning                                           |
+  |--------------------------|------------------|---------------------------------------------------|
+  | `oracle`                 | `SCN`            | Oracle System Change Number                       |
+  | `postgres`               | `STREAM_POSITION`| Postgres WAL position (LSN) exposed by DMS        |
+
+  Both the DMS task transformation rule and the metadata generator pick the
+  name from `var.dms_source.engine_name`, so downstream Parquet files and
+  Glue/metadata schemas stay in sync.
+
   {{ .Inputs }}
 
   {{ .Outputs }}

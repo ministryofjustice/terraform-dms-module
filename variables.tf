@@ -42,19 +42,33 @@ variable "dms_source" {
     engine_name                 = string,
     secrets_manager_arn         = string,
     secrets_manager_kms_arn     = string,
-    sid                         = string,
+    sid                         = optional(string)
+    database_name               = optional(string)
     extra_connection_attributes = optional(string)
     cdc_start_time              = optional(string)
   })
 
   validation {
-    condition     = contains(["oracle"], var.dms_source.engine_name)
-    error_message = "Valid values for var: test_variable are ('oracle')."
+    condition     = contains(["oracle", "postgres"], var.dms_source.engine_name)
+    error_message = "Valid values for engine_name are ('oracle', 'postgres')."
+  }
+
+  validation {
+    condition = (
+      (var.dms_source.engine_name == "oracle" && var.dms_source.sid != null) ||
+      (var.dms_source.engine_name == "postgres" && var.dms_source.database_name != null)
+    )
+    error_message = "For engine_name 'oracle' set 'sid'. For engine_name 'postgres' set 'database_name'."
   }
 
   description = <<EOF
-    extra_connection_attributes: Extra connection attributes to be used in the connection string</br>
-    cdc_start_time: The start time for the CDC task, this will need to be set to a date after the Oracle database setup has been complete (this is to ensure the logs are available)
+    engine_name: Database engine type ('oracle' or 'postgres')
+    secrets_manager_arn: ARN of the Secrets Manager secret containing database credentials
+    secrets_manager_kms_arn: ARN of the KMS key encrypting the secret
+    sid: Oracle SID / service name (required for Oracle)
+    database_name: Database name (required for Postgres)
+    extra_connection_attributes: Extra connection attributes for the DMS endpoint (e.g. "PluginName=test_decoding;" for Postgres CDC)
+    cdc_start_time: The start time for the CDC task (must be after the database setup is complete to ensure logs/WAL are available)
   EOF
 }
 

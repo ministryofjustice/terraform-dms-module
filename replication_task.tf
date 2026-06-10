@@ -9,6 +9,9 @@ locals {
   objects            = [for object in local.input_data.objects : replace(object, "-", "_")]
   blobs              = local.input_data.blobs
   columns_to_exclude = local.input_data.columns_to_exclude
+  # Oracle exposes the source commit position as SCN (System Change Number);
+  # other engines (e.g. Postgres LSN) use a generic STREAM_POSITION name.
+  stream_position_column = var.dms_source.engine_name == "oracle" ? "SCN" : "STREAM_POSITION"
   rules = flatten(concat(
     [
       for idx, obj in local.objects : {
@@ -26,10 +29,10 @@ locals {
       for idx, obj in local.objects : {
         rule-type   = "transformation"
         rule-id     = length(local.objects) + idx + 1
-        rule-name   = "add-scn-${lower(obj)}"
+        rule-name   = "add-${lower(local.stream_position_column)}-${lower(obj)}"
         rule-action = "add-column"
         rule-target = "column"
-        value       = "SCN"
+        value       = local.stream_position_column
         expression  = "$AR_H_STREAM_POSITION"
         data-type = {
           type   = "string"

@@ -1,14 +1,13 @@
 # DMS Source Endpoint
 resource "aws_dms_endpoint" "source" {
-  #checkov:skip=CKV_AWS_296: Use AWS managed KMS key
   endpoint_id   = "${var.db}-source"
   endpoint_type = "source"
   engine_name   = var.dms_source.engine_name
 
-  database_name = var.dms_source.sid
+  database_name = coalesce(var.dms_source.database_name, var.dms_source.sid)
   server_name   = local.database_credentials["host"]
   username      = local.database_credentials["username"]
-  password      = "${local.database_credentials["oracle_password"]},${local.database_credentials["asm_password"]}"
+  password      = var.dms_source.engine_name == "oracle" ? "${local.database_credentials["oracle_password"]},${local.database_credentials["asm_password"]}" : local.database_credentials["password"]
   port          = local.database_credentials["port"]
 
   extra_connection_attributes = var.dms_source.extra_connection_attributes

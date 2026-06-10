@@ -113,6 +113,21 @@ This will be used to select the tables to be migrated.
 }
 ```
 
+## Source commit-position column
+
+Every replicated row is augmented with a column carrying the source DB's
+commit position (DMS task header `$AR_H_STREAM_POSITION`). The column name
+is engine-specific so it matches the source's native terminology:
+
+| `dms_source.engine_name` | Column name      | Meaning                                           |
+|--------------------------|------------------|---------------------------------------------------|
+| `oracle`                 | `SCN`            | Oracle System Change Number                       |
+| `postgres`               | `STREAM_POSITION`| Postgres WAL position (LSN) exposed by DMS        |
+
+Both the DMS task transformation rule and the metadata generator pick the
+name from `var.dms_source.engine_name`, so downstream Parquet files and
+Glue/metadata schemas stay in sync.
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -121,7 +136,7 @@ This will be used to select the tables to be migrated.
 | <a name="input_db"></a> [db](#input\_db) | The database name | `string` | n/a | yes |
 | <a name="input_dms_mapping_rules"></a> [dms\_mapping\_rules](#input\_dms\_mapping\_rules) | The path to the mapping rules file | <pre>object({<br/>    bucket = string<br/>    key    = string<br/>  })</pre> | n/a | yes |
 | <a name="input_dms_replication_instance"></a> [dms\_replication\_instance](#input\_dms\_replication\_instance) | Properties of the dms replication instance to be used in the migration | <pre>object({<br/>    replication_instance_id      = string<br/>    subnet_group_id              = optional(string)<br/>    subnet_group_name            = optional(string)<br/>    subnet_ids                   = optional(list(string))<br/>    allocated_storage            = number<br/>    availability_zone            = string<br/>    engine_version               = string<br/>    kms_key_arn                  = string<br/>    multi_az                     = bool<br/>    replication_instance_class   = string<br/>    inbound_cidr                 = string<br/>    apply_immediately            = optional(bool, false)<br/>    preferred_maintenance_window = optional(string, "sun:10:30-sun:14:30")<br/>  })</pre> | n/a | yes |
-| <a name="input_dms_source"></a> [dms\_source](#input\_dms\_source) | extra\_connection\_attributes: Extra connection attributes to be used in the connection string</br><br/>    cdc\_start\_time: The start time for the CDC task, this will need to be set to a date after the Oracle database setup has been complete (this is to ensure the logs are available) | <pre>object({<br/>    engine_name                 = string,<br/>    secrets_manager_arn         = string,<br/>    secrets_manager_kms_arn     = string,<br/>    sid                         = string,<br/>    extra_connection_attributes = optional(string)<br/>    cdc_start_time              = optional(string)<br/>  })</pre> | n/a | yes |
+| <a name="input_dms_source"></a> [dms\_source](#input\_dms\_source) | engine\_name: Database engine type ('oracle' or 'postgres')<br/>    secrets\_manager\_arn: ARN of the Secrets Manager secret containing database credentials<br/>    secrets\_manager\_kms\_arn: ARN of the KMS key encrypting the secret<br/>    sid: Oracle SID / service name (required for Oracle)<br/>    database\_name: Database name (required for Postgres)<br/>    extra\_connection\_attributes: Extra connection attributes for the DMS endpoint (e.g. "PluginName=test\_decoding;" for Postgres CDC)<br/>    cdc\_start\_time: The start time for the CDC task (must be after the database setup is complete to ensure logs/WAL are available) | <pre>object({<br/>    engine_name                 = string,<br/>    secrets_manager_arn         = string,<br/>    secrets_manager_kms_arn     = string,<br/>    sid                         = optional(string)<br/>    database_name               = optional(string)<br/>    extra_connection_attributes = optional(string)<br/>    cdc_start_time              = optional(string)<br/>  })</pre> | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | The environment name | `string` | n/a | yes |
 | <a name="input_glue_catalog_arn"></a> [glue\_catalog\_arn](#input\_glue\_catalog\_arn) | Which glue catalog to grant metadata generator permissions to (optional) | `string` | `""` | no |
 | <a name="input_glue_catalog_role_arn"></a> [glue\_catalog\_role\_arn](#input\_glue\_catalog\_role\_arn) | Which role to use to access glue catalog (optional) | `string` | `""` | no |

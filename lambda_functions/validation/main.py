@@ -42,6 +42,10 @@ type_lookup = {
     "decimal": "decimal",
     "int": "decimal",
     "binary": "binary",
+    "date": "datetime",
+    "double": "decimal",
+    "float": "decimal",
+    "long": "decimal",
 }
 
 
@@ -162,6 +166,24 @@ def return_agnostic_type(data_type: str, column_name: Optional[str] = None) -> s
         f"The column type '{data_type}' "
         f"{'for column ' + column_name if column_name else ''} is already an "
         "agnostic type."
+    )
+
+
+def normalise_to_agnostic_type(
+    data_type: str, column_name: Optional[str] = None
+) -> str:
+    """Normalise either an agnostic type or a source/parquet type to an agnostic type."""
+    data_type = strip_data_type(data_type=data_type)
+
+    if data_type in type_lookup.values():
+        return data_type
+
+    if data_type in type_lookup:
+        return type_lookup[data_type]
+
+    raise MetadataTypeMismatchException(
+        f"The column type '{data_type}' "
+        f"{'for column ' + column_name if column_name else ''} is not a valid agnostic type."
     )
 
 
@@ -439,14 +461,12 @@ class FileValidator:
         # that exist in both metadata & parquet files by using the intersection.
         for col in sorted(set(metadata_cols).intersection(set(parquet_cols))):
             try:
-                agnostic_parquet_type = return_agnostic_type(
+                agnostic_parquet_type = normalise_to_agnostic_type(
                     data_type=parquet_cols[col], column_name=col
                 )
-                agnostic_metadata_type = strip_data_type(metadata_cols[col])
-                if agnostic_metadata_type not in type_lookup.values():
-                    raise MetadataTypeMismatchException(
-                        f"'{agnostic_metadata_type}' is not a valid agnostic type.'"
-                    )
+                agnostic_metadata_type = normalise_to_agnostic_type(
+                    data_type=metadata_cols[col], column_name=col
+                )
                 if agnostic_parquet_type != agnostic_metadata_type:
                     self._add_error(
                         error=(
