@@ -78,7 +78,7 @@ module "validation_lambda_function" {
   runtime                 = "python3.12"
   timeout                 = 60
   architectures           = ["x86_64"]
-  build_in_docker         = true
+  build_in_docker         = false
   store_on_s3             = true
   s3_bucket               = aws_s3_bucket.lambda.bucket
   s3_object_storage_class = "STANDARD"
@@ -103,7 +103,7 @@ module "validation_lambda_function" {
     path = "${path.module}/lambda_functions/validation/"
     # Exclude tests and dist-info directories from the deployment package
     commands = [
-      "python3.12 -m pip install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
+      "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
       "rm -rf pyarrow/tests numpy/tests *.dist-info", # Exclude tests and dist-info directories from the deployment package
       ":zip",
     ]
