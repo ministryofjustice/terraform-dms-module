@@ -238,7 +238,7 @@ resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
 # created when engine_name == "postgres" and a source RDS instance id is supplied.
 
 locals {
-  enable_postgres_slot_alarms = var.dms_source.engine_name == "postgres" && var.source_rds_instance_id != null
+  enable_postgres_slot_alarms = var.dms_source.engine_name == "postgres" && length(trimspace(coalesce(var.source_rds_instance_id, ""))) > 0
 }
 
 resource "aws_cloudwatch_metric_alarm" "postgres_replication_slot_lag" {
