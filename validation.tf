@@ -103,7 +103,7 @@ module "validation_lambda_function" {
     path = "${path.module}/lambda_functions/validation/"
     # Exclude tests and dist-info directories from the deployment package
     commands = [
-      "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
+      "python3.12 -m pip install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
       "rm -rf pyarrow/tests numpy/tests *.dist-info", # Exclude tests and dist-info directories from the deployment package
       ":zip",
     ]
