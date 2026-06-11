@@ -78,7 +78,7 @@ repos:
       - id: terraform_fmt
       - id: terraform_tflint
       - id: terraform_validate
-        exclude: ^examples/example-readme/
+        exclude: ^examples/example-readme(-postgres)?/
         args:
           - --tf-init-args=-lockfile=readonly
       - id: terraform_checkov
