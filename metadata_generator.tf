@@ -212,7 +212,7 @@ module "metadata_generator" {
   memory_size             = 4096
   timeout                 = 900
   architectures           = ["x86_64"]
-  build_in_docker         = false
+  build_in_docker         = true
   store_on_s3             = true
   s3_bucket               = aws_s3_bucket.lambda.bucket
   s3_object_storage_class = "STANDARD"
@@ -270,7 +270,7 @@ module "independent_metadata_generator" {
   memory_size             = 4096
   timeout                 = 900
   architectures           = ["x86_64"]
-  build_in_docker         = false
+  build_in_docker         = true
   store_on_s3             = true
   s3_bucket               = aws_s3_bucket.lambda.bucket
   s3_object_storage_class = "STANDARD"
