@@ -151,6 +151,24 @@ variable "slack_webhook_secret_id" {
   description = "Webhook used to send DMS alerts"
 }
 
+variable "source_rds_instance_id" {
+  type        = string
+  default     = null
+  description = "DBInstanceIdentifier of the source RDS instance. Required when engine_name is 'postgres' to enable replication-slot CloudWatch alarms; ignored otherwise."
+}
+
+variable "postgres_replication_slot_lag_threshold_bytes" {
+  type        = number
+  default     = 10737418240
+  description = "Threshold in bytes for the OldestReplicationSlotLag alarm on the source Postgres RDS. Default 10 GiB."
+}
+
+variable "postgres_transaction_logs_disk_usage_threshold_bytes" {
+  type        = number
+  default     = 53687091200
+  description = "Threshold in bytes for the TransactionLogsDiskUsage alarm on the source Postgres RDS. Default 50 GiB."
+}
+
 variable "output_key_prefix" {
   type        = string
   default     = "dms_output"

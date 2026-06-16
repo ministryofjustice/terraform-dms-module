@@ -231,3 +231,70 @@ resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
   rule = aws_cloudwatch_event_rule.dms_instance_events.name
   arn  = aws_cloudwatch_log_group.eventbridge.arn
 }
+
+# ------------------ Postgres Source RDS — Replication Slot Alarms ------------------
+# These alarms protect against orphaned/stuck logical replication slots pinning WAL
+# on the source Postgres RDS, which will eventually fill the disk. They are only
+# created when engine_name == "postgres" and a source RDS instance id is supplied.
+
+locals {
+  enable_postgres_slot_alarms = (
+    var.dms_source.engine_name == "postgres"
+    && var.source_rds_instance_id != null
+    && length(trimspace(var.source_rds_instance_id)) > 0
+  )
+}
+
+resource "aws_cloudwatch_metric_alarm" "postgres_replication_slot_lag" {
+  count = local.enable_postgres_slot_alarms ? 1 : 0
+
+  alarm_name          = "${var.db}-postgres-replication-slot-lag"
+  alarm_description   = "WAL bytes pinned by the oldest logical replication slot on ${var.source_rds_instance_id}. A persistently high value indicates an orphaned or stuck DMS replication slot that will fill the source disk."
+  namespace           = "AWS/RDS"
+  metric_name         = "OldestReplicationSlotLag"
+  statistic           = "Maximum"
+  period              = 300
+  evaluation_periods  = 3
+  threshold           = var.postgres_replication_slot_lag_threshold_bytes
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DBInstanceIdentifier = var.source_rds_instance_id
+  }
+
+  alarm_actions = [aws_sns_topic.dms_events.arn]
+  ok_actions    = [aws_sns_topic.dms_events.arn]
+
+  tags = merge(
+    { Name = "${var.db}-postgres-replication-slot-lag" },
+    var.tags
+  )
+}
+
+resource "aws_cloudwatch_metric_alarm" "postgres_transaction_logs_disk_usage" {
+  count = local.enable_postgres_slot_alarms ? 1 : 0
+
+  alarm_name          = "${var.db}-postgres-transaction-logs-disk-usage"
+  alarm_description   = "WAL disk usage on ${var.source_rds_instance_id}. Sustained growth alongside replication-slot lag indicates WAL is being retained by a stuck slot."
+  namespace           = "AWS/RDS"
+  metric_name         = "TransactionLogsDiskUsage"
+  statistic           = "Maximum"
+  period              = 300
+  evaluation_periods  = 3
+  threshold           = var.postgres_transaction_logs_disk_usage_threshold_bytes
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    DBInstanceIdentifier = var.source_rds_instance_id
+  }
+
+  alarm_actions = [aws_sns_topic.dms_events.arn]
+  ok_actions    = [aws_sns_topic.dms_events.arn]
+
+  tags = merge(
+    { Name = "${var.db}-postgres-transaction-logs-disk-usage" },
+    var.tags
+  )
+}

@@ -247,11 +247,8 @@ module "metadata_generator" {
   }
 
   source_path = [{
-    path = "${path.module}/lambda_functions/metadata_generator/"
-    commands = [
-      "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
-      ":zip",
-    ]
+    path             = "${path.module}/lambda_functions/metadata_generator/main.py"
+    pip_requirements = "${path.module}/lambda_functions/metadata_generator/requirements.txt"
   }]
 
   tags = var.tags
@@ -306,11 +303,8 @@ module "independent_metadata_generator" {
   }
 
   source_path = [{
-    path = "${path.module}/lambda_functions/metadata_generator/"
-    commands = [
-      "pip3.12 install --platform=manylinux2014_x86_64 --only-binary=:all: --no-compile --target=. -r requirements.txt",
-      ":zip",
-    ]
+    path             = "${path.module}/lambda_functions/metadata_generator/main.py"
+    pip_requirements = "${path.module}/lambda_functions/metadata_generator/requirements.txt"
   }]
 
   tags = var.tags
