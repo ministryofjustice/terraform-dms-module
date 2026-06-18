@@ -57,7 +57,7 @@ variable "dms_source" {
     condition = (
       (
         var.dms_source.engine_name == "oracle" &&
-        (var.dms_source.sid == null || var.dms_source.database_name != null)
+        (var.dms_source.sid != null || var.dms_source.database_name == null)
       )
     )
     error_message = "For engine_name 'oracle' set 'sid' only, do not set 'database_name'."
@@ -67,7 +67,7 @@ variable "dms_source" {
     condition = (
       (
         var.dms_source.engine_name == "postgres" &&
-        (var.dms_source.database_name == null || var.dms_source.sid != null)
+        (var.dms_source.database_name != null || var.dms_source.sid == null)
       )
     )
     error_message = "For engine_name 'postgres' set 'database_name' only, do not set 'sid'."
