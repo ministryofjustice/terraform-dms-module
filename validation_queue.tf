@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "validation_lambda_sqs" {
     condition {
       test     = "StringEquals"
       variable = "kms:ViaService"
-      values   = ["sqs.${data.aws_region.current.name}.amazonaws.com"]
+      values   = ["sqs.${data.aws_region.current.region}.amazonaws.com"]
     }
 
     condition {

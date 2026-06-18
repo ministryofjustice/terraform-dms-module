@@ -18,6 +18,11 @@ from sqlalchemy import Engine, create_engine
 import ast
 
 patch_all()
+load_dotenv()
+
+logger = logging.getLogger()
+log_level = os.getenv("LOG_LEVEL", "INFO")
+logger.setLevel(log_level)
 
 raw_history_bucket = os.getenv("RAW_HISTORY_BUCKET")
 output_key_prefix = os.getenv("OUTPUT_KEY_PREFIX")
@@ -34,6 +39,65 @@ retry_failed_after_recreate_metadata = (
 use_glue_catalog = os.getenv("USE_GLUE_CATALOG", "true").lower() == "true"
 glue_catalog_arn = os.getenv("GLUE_CATALOG_ARN", "")
 os.environ["AWS_STS_REGIONAL_ENDPOINTS"] = "regional"
+
+ENGINE_CONFIGS: dict[str, dict[str, Any]] = {
+    "oracle": {
+        "position_column": {
+            "name": "scn",
+            "type": "string",
+            "description": "Oracle system change number",
+            "nullable": True,
+        },
+        "password_secret_key": "oracle_password",  # pragma: allowlist secret
+        "default_port": 1521,
+        "upper_case_table_name": True,
+        "requires_oracle_shim": True,
+    },
+    "postgres": {
+        "position_column": {
+            "name": "stream_position",
+            "type": "string",
+            "description": "DMS source stream position (e.g. Postgres LSN)",
+            "nullable": True,
+        },
+        "password_secret_key": "password",  # pragma: allowlist secret
+        "default_port": 5432,
+        "upper_case_table_name": False,
+        "requires_oracle_shim": False,
+    },
+}
+
+
+# def _normalise_engine(engine_type: str | None) -> str:
+#     if engine_type is None:
+#         raise ValueError(
+#             f"Database engine is not set. Expected one of: {', '.join(sorted(ENGINE_CONFIGS.keys()))}"
+#         )
+#     engine = engine_type.lower()
+#     if engine not in ENGINE_CONFIGS:
+#         raise ValueError(
+#             f"Unsupported engine '{engine}'. Supported engines: {', '.join(sorted(ENGINE_CONFIGS.keys()))}"
+#         )
+#     return engine
+
+
+def _build_extraction_columns(engine_type: str) -> list[dict[str, Any]]:
+    return [
+        ENGINE_CONFIGS[engine_type]["position_column"],
+        {
+            "name": "extraction_timestamp",
+            "type": "string",
+            "description": "DMS extraction timestamp",
+            "nullable": False,
+        },
+        {
+            "name": "op",
+            "type": "string",
+            "description": "Type of change, for rows added by ongoing replication.",
+            "nullable": True,
+            "enum": ["I", "U", "D"],
+        },
+    ]
 
 
 def _get_glue_client() -> Any:
@@ -59,11 +123,6 @@ def _get_glue_client() -> Any:
     return boto3.client("glue", **glue_client_kwargs)
 
 
-logger = logging.getLogger()
-log_level = os.getenv("LOG_LEVEL", "INFO")
-logger.setLevel(log_level)
-
-
 def _get_secretmanager() -> Any:
     return boto3.client("secretsmanager")
 
@@ -72,50 +131,13 @@ def _get_s3() -> Any:
     return boto3.client("s3")
 
 
-load_dotenv()
+def _load_oracle_shim_if_needed(engine_type: str) -> None:
+    if ENGINE_CONFIGS[engine_type]["requires_oracle_shim"]:
+        import oracledb
 
-# Oracle driver shim — only loaded when engine is oracle
-_engine_type = os.getenv("ENGINE", "oracle")
-if _engine_type == "oracle":
-    import oracledb
+        oracledb.version = "8.3.0"  # type: ignore[assignment]
+        sys.modules["cx_Oracle"] = oracledb
 
-    oracledb.version = "8.3.0"  # type: ignore[assignment]
-    sys.modules["cx_Oracle"] = oracledb
-
-# Oracle exposes the source commit position as SCN (System Change Number);
-# Postgres (and other engines) use a generic STREAM_POSITION name. The metadata
-# column name must match what the DMS task transformation rule adds.
-if _engine_type == "oracle":
-    _position_column = {
-        "name": "scn",
-        "type": "string",
-        "description": "Oracle system change number",
-        "nullable": True,
-    }
-else:
-    _position_column = {
-        "name": "stream_position",
-        "type": "string",
-        "description": "DMS source stream position (e.g. Postgres LSN)",
-        "nullable": True,
-    }
-
-extraction_columns = [
-    _position_column,
-    {
-        "name": "extraction_timestamp",
-        "type": "string",
-        "description": "DMS extraction timestamp",
-        "nullable": False,
-    },
-    {
-        "name": "op",
-        "type": "string",
-        "description": "Type of change, for rows added by ongoing replication.",
-        "nullable": True,
-        "enum": ["I", "U", "D"],
-    },
-]
 
 curation_columns = [
     {
@@ -163,6 +185,9 @@ class MetadataExtractor:
         self.dialect = db_options["dialect"]
         self.objects = db_options["objects"]
         self.deleted_tables = db_options.get("deleted_tables", [])
+        self.extraction_columns = db_options.get(
+            "extraction_columns", _build_extraction_columns(self.dialect)
+        )
 
         path_to_dms_mapping_rules = db_options.get("path_to_dms_mapping_rules", "")
         if dms_mapping_rules_bucket:
@@ -241,7 +266,7 @@ class MetadataExtractor:
 
     def _add_reference_columns(self, metadata: Metadata) -> Metadata:
         logger.info("Adding reference columns to metadata: %s", metadata)
-        for column in extraction_columns:
+        for column in self.extraction_columns:
             metadata.update_column(column, append=False)
         for column in curation_columns:
             metadata.update_column(column)
@@ -374,13 +399,16 @@ def handler(event: dict[str, Any], context: Any) -> None:
 
     db_identifier = db_secret["dbInstanceIdentifier"]
     username = db_secret["username"]
-    engine_type = db_secret.get("engine", os.getenv("ENGINE"))
+    engine_type = os.getenv("ENGINE")
+    engine_config = ENGINE_CONFIGS[engine_type]  # type: ignore
+    _load_oracle_shim_if_needed(engine_type)  # type: ignore
     host = db_secret["host"]
     db_name = db_secret.get("dbname", os.getenv("DATABASE_NAME"))
 
+    password = db_secret[engine_config["password_secret_key"]]
+
     if engine_type == "oracle":
-        password = db_secret["oracle_password"]
-        port = "1521"
+        port = db_secret.get("port", engine_config["default_port"])
         dsn = f"{host}:{port}/?service_name={db_name}"
         db_string = f"oracle://{username}:{password}@{dsn}"
         connect_args: dict[str, Any] = {
@@ -388,8 +416,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
             "osuser": "rdsdb",
         }
     else:
-        password = db_secret["password"]
-        port = db_secret.get("port", 5432)
+        port = db_secret.get("port", engine_config["default_port"])
         db_string = f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
         connect_args = {}
 
@@ -415,6 +442,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
         "include_derived_columns": True,
         "dialect": engine_type,
         "path_to_dms_mapping_rules": dms_mapping_rules_key,
+        "extraction_columns": _build_extraction_columns(engine_type),  # type: ignore
     }
 
     if use_glue_catalog:
@@ -459,7 +487,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
         gc.generate_from_meta(
             table,
             db_identifier,
-            f"s3://{raw_history_bucket}/{output_key_prefix}/{schema}/{table.name.upper() if engine_type == 'oracle' else table.name}",
+            f"s3://{raw_history_bucket}/{output_key_prefix}/{schema}/{table.name.upper() if engine_config['upper_case_table_name'] else table.name}",
         )
         for table in db_metadata
     ]
@@ -474,7 +502,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
             table["TableInput"]["Parameters"].update(
                 {
                     "source_primary_key": primary_key_list,
-                    "extraction_key": f"extraction_timestamp, {_position_column['name']}",
+                    "extraction_key": f"extraction_timestamp, {engine_config['position_column']['name']}",
                     "extraction_timestamp_column_name": "extraction_timestamp",
                     "extraction_operation_column_name": "op",
                 }

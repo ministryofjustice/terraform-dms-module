@@ -207,7 +207,7 @@ data "aws_iam_policy_document" "eventbridge" {
       ]
     }
     resources = [
-      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.id}:log-group:${aws_cloudwatch_log_group.eventbridge.name}:*"
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.id}:log-group:${aws_cloudwatch_log_group.eventbridge.name}:*"
     ]
   }
 }
@@ -239,7 +239,7 @@ resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
 
 locals {
   enable_postgres_slot_alarms = (
-    var.dms_source.engine_name == "postgres"
+    local.source_engine_config.supports_source_rds_slot_alarms
     && var.source_rds_instance_id != null
     && length(trimspace(var.source_rds_instance_id)) > 0
   )

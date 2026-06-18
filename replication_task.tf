@@ -5,13 +5,11 @@ data "aws_s3_object" "mapping_rules" {
 }
 
 locals {
-  input_data         = jsondecode(data.aws_s3_object.mapping_rules.body)
-  objects            = [for object in local.input_data.objects : replace(object, "-", "_")]
-  blobs              = local.input_data.blobs
-  columns_to_exclude = local.input_data.columns_to_exclude
-  # Oracle exposes the source commit position as SCN (System Change Number);
-  # other engines (e.g. Postgres LSN) use a generic STREAM_POSITION name.
-  stream_position_column = var.dms_source.engine_name == "oracle" ? "SCN" : "STREAM_POSITION"
+  input_data             = jsondecode(data.aws_s3_object.mapping_rules.body)
+  objects                = [for object in local.input_data.objects : replace(object, "-", "_")]
+  blobs                  = local.input_data.blobs
+  columns_to_exclude     = local.input_data.columns_to_exclude
+  stream_position_column = local.source_engine_config.stream_position_column
   rules = flatten(concat(
     [
       for idx, obj in local.objects : {

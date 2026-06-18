@@ -1,17 +1,3 @@
-# DMS Source Endpoint
-locals {
-  # Sensible default ECA for Postgres CDC. test_decoding ships with stock RDS
-  # Postgres; HeartbeatEnable prevents the replication slot from pinning WAL
-  # during idle periods. Consumer-supplied ECA wins if non-null.
-  default_postgres_source_eca = "PluginName=test_decoding;CaptureDDLs=N;HeartbeatEnable=true;HeartbeatFrequency=5;HeartbeatSchema=public;"
-
-  source_extra_connection_attributes = (
-    var.dms_source.engine_name == "postgres"
-    ? coalesce(var.dms_source.extra_connection_attributes, local.default_postgres_source_eca)
-    : var.dms_source.extra_connection_attributes
-  )
-}
-
 resource "aws_dms_endpoint" "source" {
   endpoint_id   = "${var.db}-source"
   endpoint_type = "source"
@@ -20,7 +6,7 @@ resource "aws_dms_endpoint" "source" {
   database_name = coalesce(var.dms_source.database_name, var.dms_source.sid)
   server_name   = local.database_credentials["host"]
   username      = local.database_credentials["username"]
-  password      = var.dms_source.engine_name == "oracle" ? "${local.database_credentials["oracle_password"]},${local.database_credentials["asm_password"]}" : local.database_credentials["password"]
+  password      = local.source_engine_config.password
   port          = local.database_credentials["port"]
 
   extra_connection_attributes = local.source_extra_connection_attributes

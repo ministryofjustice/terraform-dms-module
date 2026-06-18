@@ -12,12 +12,10 @@ locals {
     for full_load_name, full_load in var.independent_full_loads :
     full_load_name => jsondecode(data.aws_s3_object.independent_mapping_rules[full_load_name].body)
   }
-  independent_objects            = { for full_load_name, full_load in local.independent_input_data : full_load_name => [for object in full_load.objects : replace(object, "-", "_")] }
-  independent_blobs              = { for full_load_name, full_load in local.independent_input_data : full_load_name => full_load.blobs }
-  independent_columns_to_exclude = { for full_load_name, full_load in local.independent_input_data : full_load_name => full_load.columns_to_exclude }
-  # Oracle exposes the source commit position as SCN (System Change Number);
-  # other engines (e.g. Postgres LSN) use a generic STREAM_POSITION name.
-  independent_stream_position_column = var.dms_source.engine_name == "oracle" ? "SCN" : "STREAM_POSITION"
+  independent_objects                = { for full_load_name, full_load in local.independent_input_data : full_load_name => [for object in full_load.objects : replace(object, "-", "_")] }
+  independent_blobs                  = { for full_load_name, full_load in local.independent_input_data : full_load_name => full_load.blobs }
+  independent_columns_to_exclude     = { for full_load_name, full_load in local.independent_input_data : full_load_name => full_load.columns_to_exclude }
+  independent_stream_position_column = local.source_engine_config.stream_position_column
   independent_rules = { for full_load_name, full_load in local.independent_input_data : full_load_name => flatten(concat(
     [
       for idx, obj in local.independent_objects[full_load_name] : {
