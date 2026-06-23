@@ -240,8 +240,7 @@ resource "aws_cloudwatch_event_target" "eventbridge_dms_instance_events" {
 locals {
   enable_postgres_slot_alarms = (
     var.dms_source.engine_name == "postgres"
-    && var.source_rds_instance_id != null
-    && length(trimspace(var.source_rds_instance_id)) > 0
+    && try(length(trimspace(var.source_rds_instance_id)), 0) > 0
   )
 }
 
