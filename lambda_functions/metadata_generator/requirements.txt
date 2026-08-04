@@ -2,7 +2,7 @@ oracledb>=2.5.1
 etl_manager>=9.0.0
 mojap-metadata>=1.16.0
 python-dotenv>=1.0.1
-setuptools==80.10.2
+setuptools==83.0.0
 sqlalchemy>=2.0.38
 aws-xray-sdk>=2.14.0
 psycopg2-binary>=2.9.9
