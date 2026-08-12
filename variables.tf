@@ -116,6 +116,20 @@ variable "create_premigration_assessment_resources" {
   description = "Whether to create pre-requisites for DMS PreMigration Assessment to be run manually"
 }
 
+variable "manage_dms_service_roles" {
+  type        = bool
+  default     = true
+  description = <<EOF
+    Whether this module should create the account-level DMS service roles
+    `dms-vpc-role` and `dms-cloudwatch-logs-role`. AWS DMS looks these up by their exact
+    names, so they are account-level singletons — only ONE pipeline per AWS account may
+    create them. Leave as true for the first pipeline in a fresh account. Set to false
+    for additional pipelines in the same account, or when the roles are managed
+    elsewhere; the module will then look up the existing `dms-vpc-role` by name for the
+    S3 endpoint service-access role (so the role must already exist).
+  EOF
+}
+
 variable "retry_failed_after_recreate_metadata" {
   type        = bool
   default     = true

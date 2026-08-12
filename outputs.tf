@@ -1,5 +1,5 @@
 output "dms_role_arn" {
-  value       = aws_iam_role.dms.arn
+  value       = local.dms_vpc_role_arn
   description = "The ARN for the AWS role created for the DMS target endpoint"
   sensitive   = true
 }

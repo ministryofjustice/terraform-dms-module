@@ -70,6 +70,7 @@ After provisioning the RDS instance, create the `dms_user` role via the Lambda c
     "CREATE USER dms_user WITH PASSWORD '<DMS_USER_PASSWORD_FROM_SECRETS_MANAGER>' LOGIN",
     "GRANT rds_replication TO dms_user",
     "GRANT USAGE ON SCHEMA public TO dms_user",
+    "GRANT CREATE ON SCHEMA public TO dms_user",
     "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO dms_user"
   ]
 }

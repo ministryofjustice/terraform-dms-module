@@ -12,3 +12,7 @@ env/
 terraform.tfstate
 terraform.tfstate.backup
 *__pycache__/
+
+# Local scratch / diagram artifacts
+lambda_functions/index.html
+lambda_functions/dms-end-to-end-pipeline.excalidraw.png

@@ -1,7 +1,15 @@
 # IAM Role for DMS VPC Access
+#
+# AWS DMS looks up the VPC-management role by the EXACT name `dms-vpc-role` (it is an
+# account-level singleton, not referenced by ARN for that purpose), so this must be the
+# literal name rather than a name_prefix. Because only ONE pipeline per AWS account can
+# own the singleton, creation is gated behind `manage_dms_service_roles`. Additional
+# pipelines in the same account (or accounts where the roles are managed elsewhere) set
+# it to false, and the role is looked up by name for the S3 endpoint service-access role.
 resource "aws_iam_role" "dms" {
+  count = var.manage_dms_service_roles ? 1 : 0
   # This has to be a specific name for some reason see https://repost.aws/questions/QU61eADUU7SnO-t7MmhxgfPA/dms-service-roles
-  name_prefix = "dms-vpc-role-"
+  name = "dms-vpc-role"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -21,9 +29,21 @@ resource "aws_iam_role" "dms" {
   )
 }
 
+# When this module does not manage the singleton roles, look up the existing
+# `dms-vpc-role` so the S3 endpoint service-access role ARN still resolves.
+data "aws_iam_role" "dms_vpc" {
+  count = var.manage_dms_service_roles ? 0 : 1
+  name  = "dms-vpc-role"
+}
+
+locals {
+  dms_vpc_role_arn  = var.manage_dms_service_roles ? aws_iam_role.dms[0].arn : data.aws_iam_role.dms_vpc[0].arn
+  dms_vpc_role_name = var.manage_dms_service_roles ? aws_iam_role.dms[0].name : data.aws_iam_role.dms_vpc[0].name
+}
+
 resource "aws_iam_role_policy" "dms" {
   name = "${var.db}-dms"
-  role = aws_iam_role.dms.id
+  role = local.dms_vpc_role_name
 
   policy = jsonencode({
     "Version" : "2012-10-17",
@@ -60,8 +80,9 @@ resource "aws_iam_role_policy" "dms" {
 }
 
 resource "aws_iam_role_policy_attachment" "dms-vpc-role-AmazonDMSVPCManagementRole" {
+  count      = var.manage_dms_service_roles ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonDMSVPCManagementRole"
-  role       = aws_iam_role.dms.name
+  role       = aws_iam_role.dms[0].name
 
   # It takes some time for these attachments to work, and creating the aws_dms_replication_subnet_group fails if this attachment hasn't completed.
   provisioner "local-exec" {
@@ -70,9 +91,13 @@ resource "aws_iam_role_policy_attachment" "dms-vpc-role-AmazonDMSVPCManagementRo
 }
 
 # IAM Role for DMS Cloudwatch Access
+#
+# Like dms-vpc-role, AWS DMS looks this up by the exact name `dms-cloudwatch-logs-role`,
+# so it is an account-level singleton gated behind `manage_dms_service_roles`.
 resource "aws_iam_role" "dms_cloudwatch" {
+  count = var.manage_dms_service_roles ? 1 : 0
   # This has to be a specific name for some reason
-  name_prefix = "dms-cloudwatch-logs-role-"
+  name = "dms-cloudwatch-logs-role"
   assume_role_policy = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -93,8 +118,9 @@ resource "aws_iam_role" "dms_cloudwatch" {
 }
 
 resource "aws_iam_role_policy_attachment" "dms-cloudwatch-logs-role-AmazonDMSCloudWatchLogsRole" {
+  count      = var.manage_dms_service_roles ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonDMSCloudWatchLogsRole"
-  role       = aws_iam_role.dms_cloudwatch.name
+  role       = aws_iam_role.dms_cloudwatch[0].name
 }
 
 # IAM Role for DMS Premigration Assessmeent
