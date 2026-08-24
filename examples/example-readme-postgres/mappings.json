@@ -1,0 +1,12 @@
+{
+  "blobs": [],
+  "columns_to_exclude": [],
+  "extraction_date": "2026-06-11T00:00:00.000000",
+  "objects": [
+    "customers",
+    "orders",
+    "products"
+  ],
+  "objects_from": "postgres_sandbox",
+  "schema": "public"
+}

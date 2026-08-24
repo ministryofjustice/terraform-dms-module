@@ -380,7 +380,7 @@ def handler(event: dict[str, Any], context: Any) -> None:
 
     if engine_type == "oracle":
         password = db_secret["oracle_password"]
-        port = "1521"
+        port = db_secret.get("port", 1521)
         dsn = f"{host}:{port}/?service_name={db_name}"
         db_string = f"oracle://{username}:{password}@{dsn}"
         connect_args: dict[str, Any] = {
