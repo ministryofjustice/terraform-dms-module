@@ -95,6 +95,28 @@ locals {
       }
       if endswith(obj, "_MV")
     ],
+    [
+      for idx, obj in local.independent_objects[full_load_name] : {
+        rule-type   = "transformation"
+        rule-id     = 100000 + idx
+        rule-name   = "add-extraction-timestamp-${lower(obj)}"
+        rule-action = "add-column"
+        rule-target = "column"
+
+        value      = "EXTRACTION_TIMESTAMP"
+        expression = "'${var.independent_full_loads[full_load_name].snapshot_timestamp}'"
+
+        data-type = {
+          type   = "string"
+          length = 26
+        }
+
+        object-locator = {
+          schema-name = length(split(".", obj)) > 1 ? split(".", obj)[0] : local.independent_input_data[full_load_name].schema
+          table-name  = length(split(".", obj)) > 1 ? split(".", obj)[1] : obj
+        }
+      }
+    ],
     ))
   }
 }
@@ -104,6 +126,33 @@ output "independent_terraform_rules" {
   value = local.independent_rules
 }
 
+# DMS S3 Target Endpoint
+resource "aws_dms_s3_endpoint" "s3_target_independent_full_load" {
+  # checkov:skip=CKV_AWS_298: Use AWS managed KMS key
+
+  endpoint_id                      = "${var.db}-target"
+  endpoint_type                    = "target"
+  bucket_name                      = aws_s3_bucket.landing.bucket
+  service_access_role_arn          = aws_iam_role.dms.arn
+  add_column_name                  = var.s3_target_config.add_column_name
+  canned_acl_for_objects           = "bucket-owner-full-control"
+  cdc_max_batch_interval           = var.s3_target_config.max_batch_interval
+  cdc_min_file_size                = var.s3_target_config.min_file_size
+  compression_type                 = "GZIP"
+  data_format                      = "parquet"
+  encoding_type                    = "rle-dictionary"
+  encryption_mode                  = "SSE_S3"
+  include_op_for_full_load         = true
+  parquet_timestamp_in_millisecond = true
+  parquet_version                  = "parquet-2-0"
+
+  tags = merge(
+    { Name = "${var.db}-target" },
+    var.tags
+  )
+}
+
+
 resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   for_each                  = var.independent_full_loads
   migration_type            = "full-load"
@@ -111,7 +160,7 @@ resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   replication_task_id       = "${var.db}-full-load-${each.value.full_load_name}"
   replication_task_settings = file("${path.module}/default_task_settings.json")
   source_endpoint_arn       = aws_dms_endpoint.source.endpoint_arn
-  target_endpoint_arn       = aws_dms_s3_endpoint.s3_target.endpoint_arn
+  target_endpoint_arn       = aws_dms_s3_endpoint.s3_target_independent_full_load.endpoint_arn
   table_mappings            = jsonencode({ rules : local.independent_rules[each.key] })
   start_replication_task    = false
 
