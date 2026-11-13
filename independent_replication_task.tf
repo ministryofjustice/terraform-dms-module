@@ -130,7 +130,7 @@ output "independent_terraform_rules" {
 resource "aws_dms_s3_endpoint" "s3_target_independent_full_load" {
   # checkov:skip=CKV_AWS_298: Use AWS managed KMS key
 
-  endpoint_id                      = "${var.db}-target"
+  endpoint_id                      = "${var.db}-target-independent"
   endpoint_type                    = "target"
   bucket_name                      = aws_s3_bucket.landing.bucket
   service_access_role_arn          = aws_iam_role.dms.arn
