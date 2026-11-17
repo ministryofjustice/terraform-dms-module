@@ -8,6 +8,10 @@ data "aws_s3_object" "independent_mapping_rules" {
 }
 
 locals {
+  independent_cdc_tasks = {
+    for name, task in var.independent_full_loads : name => task
+    if task.cdc != null
+  }
   independent_input_data = {
     for full_load_name, full_load in var.independent_full_loads :
     full_load_name => jsondecode(data.aws_s3_object.independent_mapping_rules[full_load_name].body)
@@ -118,4 +122,22 @@ resource "aws_dms_replication_task" "independent_full_load_replication_task" {
   tags = merge(
     { Name = "${var.db}-full-load-${each.value.full_load_name}" },
   var.tags)
+}
+
+resource "aws_dms_replication_task" "independent_cdc_replication_task" {
+  for_each                  = local.independent_cdc_tasks
+  migration_type            = "cdc"
+  cdc_start_time            = each.value.cdc.start_time
+  replication_instance_arn  = aws_dms_replication_instance.instance.replication_instance_arn
+  replication_task_id       = each.value.cdc.replication_task_id
+  replication_task_settings = file("${path.module}/default_task_settings.json")
+  source_endpoint_arn       = aws_dms_endpoint.source.endpoint_arn
+  target_endpoint_arn       = aws_dms_s3_endpoint.s3_target.endpoint_arn
+  table_mappings            = jsonencode({ rules : local.independent_rules[each.key] })
+  start_replication_task    = false
+
+  tags = merge(
+    { Name = var.replication_task_id.cdc },
+    var.tags
+  )
 }
