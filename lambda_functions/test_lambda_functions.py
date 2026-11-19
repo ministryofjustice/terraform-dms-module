@@ -81,7 +81,7 @@ def secret_payload() -> dict[str, Any]:
     return {
         "dbInstanceIdentifier": "mydbid",
         "username": "user",
-        "oracle_password": "pass",  # pragma: allowlist secret
+        "oracle_password": "pass",  # pragma: allowlist secret  # nosec B105
         "engine": "oracle",
         "host": "db.example",
         "dbname": "ORCL",
