@@ -11,4 +11,4 @@ jobs:
       contents: read
       actions: read
     uses:
-      ministryofjustice/data-engineering-github-actions/.github/workflows/reusable-security.yml@f5f397ce2bdfed91903077270fc9cb0ff8e90435  # v1.2.0
+      ministryofjustice/data-engineering-github-actions/.github/workflows/reusable-security.yml@8d5c92ff3699e48a4203cf5a9b439e62f29f4347  # v1.4.0
